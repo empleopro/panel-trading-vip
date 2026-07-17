@@ -109,7 +109,6 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Hemos blindado el JSON con absolutamente todos los campos requeridos y opcionales
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
@@ -120,25 +119,31 @@ def generar_pago_pagopar(request):
         "comprador": {
             "ruc": "4444444-4",
             "email": "cliente@vip.com",
-            "nombre": request.user.username,
+            "nombre": request.user.username if request.user.username else "Cliente VIP",
             "telefono": "0981000000",
+            "direccion": "Itaugua Centro",
             "documento": "4444444",
+            "coordenadas": "-25.3884,-57.3364",
+            "razon_social": "Cliente VIP",
             "tipo_documento": "CI",
-            "ciudad": 1,
-            "direccion": "Itaugua Centro" 
+            "direccion_referencia": "Centro",
+            "ciudad": 1
         },
         "compras_items": [
             {
-                "public_key": public_key,
+                "ciudad": 1,
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
+                "categoria": 909,
+                "public_key": public_key,
+                "url_imagen": "https://ui-avatars.com/api/?name=VIP&background=0D8ABC&color=fff",
+                "descripcion": "Acceso al panel de senales VIP",
+                "id_producto": 1,  # <--- ESTE ES EL CAMPO QUE EVITA EL ERROR DE MONTO 0
                 "precio_total_articulo": monto,
-                "ciudad": 1,
                 "vendedor_telefono": "0981000000",
                 "vendedor_direccion": "Itaugua",
-                "vendedor_direccion_referencia": "Itaugua Centro",
+                "vendedor_direccion_referencia": "Centro",
                 "vendedor_direccion_coordenadas": "-25.3884,-57.3364", 
-                "categoria": 909,
                 "peso": 1,
                 "largo": 1,
                 "ancho": 1,
