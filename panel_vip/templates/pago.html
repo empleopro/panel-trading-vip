@@ -8,7 +8,8 @@
     <h1>Renová tu Suscripción</h1>
     <p>Usuario: {{ request.user.username }}</p>
 
-    <form action="{% url 'generar_pago_pagopar' %}" method="POST">
+    <!-- AQUÍ ESTABA EL ERROR: Cambié el nombre para que coincida con tu urls.py -->
+    <form action="{% url 'checkout_pagopar' %}" method="POST">
         {% csrf_token %}
         <button type="submit">PAGAR 120.000 Gs</button>
     </form>
