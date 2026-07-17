@@ -56,3 +56,22 @@ def vista_registro(request):
             error = 'Ese nombre de usuario ya está en uso. Elegí otro.'
             
     return render(request, 'registro.html', {'error': error})
+
+    from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt  # Apagamos el guardia de seguridad SOLO para esta puerta, para que el bot pueda entrar
+def recibir_senal(request):
+    if request.method == 'POST':
+        simbolo = request.POST.get('simbolo', '')
+        tipo = request.POST.get('tipo', '')
+        precio = request.POST.get('precio', '')
+        sl = request.POST.get('sl', '')
+        tp = request.POST.get('tp', '')
+        
+        # Por ahora solo imprimimos en la consola de Render para verificar que llega
+        print(f"🔥 SEÑAL RECIBIDA DEL BOT: {tipo} en {simbolo} | Entrada: {precio} | SL: {sl} | TP: {tp}")
+        
+        return JsonResponse({'status': 'ok', 'mensaje': 'Señal recibida en la bóveda VIP'})
+    
+    return JsonResponse({'status': 'error', 'mensaje': 'Método no permitido'}, status=400)
