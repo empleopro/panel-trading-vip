@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import SenalTrading, PerfilSuscripcion
 
 # 1. VISTA DEL PANEL (Protegida)
@@ -11,7 +13,7 @@ def inicio_panel(request):
     perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
     
     if not perfil.verificar_acceso():
-        return redirect('pago_qr')
+        return redirect('pagina_pago')
         
     senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
     return render(request, 'panel.html', {'senales': senales})
@@ -57,21 +59,32 @@ def vista_registro(request):
             
     return render(request, 'registro.html', {'error': error})
 
-    from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-@csrf_exempt  # Apagamos el guardia de seguridad SOLO para esta puerta, para que el bot pueda entrar
+# 5. WEBHOOK PARA RECIBIR SEÑALES DEL BOT
+@csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
-        simbolo = request.POST.get('simbolo', '')
-        tipo = request.POST.get('tipo', '')
-        precio = request.POST.get('precio', '')
-        sl = request.POST.get('sl', '')
-        tp = request.POST.get('tp', '')
-        
-        # Por ahora solo imprimimos en la consola de Render para verificar que llega
-        print(f"🔥 SEÑAL RECIBIDA DEL BOT: {tipo} en {simbolo} | Entrada: {precio} | SL: {sl} | TP: {tp}")
-        
-        return JsonResponse({'status': 'ok', 'mensaje': 'Señal recibida en la bóveda VIP'})
+        try:
+            # Captura de datos que envía el bot
+            simbolo = request.POST.get('simbolo', 'XAUUSD')
+            tipo = request.POST.get('tipo', 'BUY')
+            precio = request.POST.get('precio', 0)
+            sl = request.POST.get('sl', 0)
+            tp = request.POST.get('tp', 0)
+            
+            # Guardado en base de datos usando los nombres exactos de tu models.py
+            SenalTrading.objects.create(
+                activo=simbolo,         # Corresponde a models.py (campo 'activo')
+                tipo=tipo,              # Corresponde a models.py (campo 'tipo')
+                precio_entrada=precio,  # Corresponde a models.py (campo 'precio_entrada')
+                sl=sl,                  # Corresponde a models.py (campo 'sl')
+                tp=tp                   # Corresponde a models.py (campo 'tp')
+            )
+            
+            print(f"🔥 SEÑAL RECIBIDA Y GUARDADA: {tipo} en {simbolo}")
+            return JsonResponse({'status': 'ok', 'mensaje': 'Señal guardada correctamente'})
+            
+        except Exception as e:
+            print(f"ERROR CRÍTICO AL GUARDAR SEÑAL: {str(e)}")
+            return JsonResponse({'status': 'error', 'mensaje': str(e)}, status=500)
     
     return JsonResponse({'status': 'error', 'mensaje': 'Método no permitido'}, status=400)
