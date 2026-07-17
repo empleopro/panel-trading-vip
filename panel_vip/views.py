@@ -116,8 +116,8 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', '')
-    private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '')
+    public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
+    private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
     pedido_id = f"{request.user.username}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
     monto_str = "120000" 
