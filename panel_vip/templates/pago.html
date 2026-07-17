@@ -2,16 +2,39 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Renovación VIP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renovación VIP | SMC Quant Terminal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-terminal: #0a0e14;
+            --bg-card: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --buy-color: #3fb950;
+        }
+        body { background-color: var(--bg-terminal); color: var(--text-primary); font-family: 'IBM Plex Sans', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .payment-card { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 10px; text-align: center; width: 100%; max-width: 400px; }
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .btn-pay { background-color: var(--buy-color); color: white; font-weight: bold; padding: 10px 20px; border: none; border-radius: 5px; width: 100%; }
+        .btn-pay:hover { background-color: #2ea043; color: white; }
+    </style>
 </head>
 <body>
-    <h1>Renová tu Suscripción</h1>
-    <p>Usuario: {{ request.user.username }}</p>
 
-    <!-- AQUÍ ESTABA EL ERROR: Cambié el nombre para que coincida con tu urls.py -->
-    <form action="{% url 'checkout_pagopar' %}" method="POST">
-        {% csrf_token %}
-        <button type="submit">PAGAR 120.000 Gs</button>
-    </form>
+    <div class="payment-card">
+        <h1>Renovación VIP</h1>
+        <p class="text-secondary">Usuario: <strong>{{ request.user.username }}</strong></p>
+        <hr class="border-secondary">
+        <p>Acceso a señales SMC Quant</p>
+        <h2 class="my-4">120.000 Gs</h2>
+        
+        <form action="{% url 'checkout_pagopar' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn-pay">PROCEDER AL PAGO</button>
+        </form>
+        <a href="/" class="btn btn-sm btn-outline-secondary mt-3">Volver al panel</a>
+    </div>
+
 </body>
 </html>
