@@ -148,7 +148,7 @@ def generar_pago_pagopar(request):
         },
         "compras_items": [   
             {
-                "public_key": public_key, # <--- ACÁ ESTÁ EL CAMBIO NUEVO
+                "public_key": public_key,
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
                 "precio_total_articulo": 120000,
@@ -158,7 +158,7 @@ def generar_pago_pagopar(request):
                 "vendedor_ruc": "", 
                 "proveedor": "Panel VIP", 
                 "ciudad": 1, 
-                "categoria": 1,
+                "categoria": 0, # <--- CAMBIAMOS A 0
                 "peso": 0, 
                 "longitud": 0, 
                 "ancho": 0, 
