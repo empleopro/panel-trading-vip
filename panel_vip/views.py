@@ -13,22 +13,29 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import SenalTrading, PerfilSuscripcion
 
-# --- VISTAS ---
-
+# 1. VISTA DEL PANEL
 @login_required(login_url='/login/')
 def inicio_panel(request):
-    perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
-    if not perfil.verificar_acceso():
-        return redirect('pagina_pago')
-    senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
-    return render(request, 'panel.html', {'senales': senales})
+    try:
+        perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
+        if not perfil.verificar_acceso():
+            return redirect('pagina_pago')
+        senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
+        return render(request, 'panel.html', {'senales': senales})
+    except Exception as e:
+        return JsonResponse({'error': f'Error en panel: {str(e)}'}, status=500)
 
+# 2. VISTA DE PAGO (Con detector de errores)
 @login_required(login_url='/login/')
 def pagina_pago(request):
-    # CORRECCIÓN: Usamos get_or_create para evitar el error 500 si el perfil no existe
-    perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
-    return render(request, 'pago.html', {'perfil': perfil, 'error_pago': None})
+    try:
+        perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
+        return render(request, 'pago.html', {'perfil': perfil, 'error_pago': None})
+    except Exception as e:
+        # Si falla, esto imprimirá el error exacto en la página en lugar de 500
+        return render(request, 'pago.html', {'error_pago': f"ERROR DE BASE DE DATOS: {str(e)}"})
 
+# 3. VISTA DE LOGIN
 def vista_login(request):
     error = None
     if request.method == 'POST':
@@ -42,6 +49,7 @@ def vista_login(request):
             error = 'Usuario o contraseña incorrectos.'
     return render(request, 'login.html', {'error': error})
 
+# 4. VISTA DE REGISTRO
 def vista_registro(request):
     error = None
     if request.method == 'POST':
@@ -49,7 +57,6 @@ def vista_registro(request):
         contra = request.POST.get('password')
         try:
             user = User.objects.create_user(username=usuario, password=contra)
-            # Creamos el perfil al registrar
             PerfilSuscripcion.objects.create(usuario=user)
             login(request, user)
             return redirect('inicio_panel')
@@ -57,6 +64,7 @@ def vista_registro(request):
             error = 'Usuario ya existe.'
     return render(request, 'registro.html', {'error': error})
 
+# 5. WEBHOOK SEÑALES
 @csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
@@ -72,6 +80,7 @@ def recibir_senal(request):
             return JsonResponse({'status': 'error', 'msg': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
+# 6. WEBHOOK PAGOPAR
 @csrf_exempt
 def notificacion_pagopar(request):
     if request.method == 'POST':
@@ -91,6 +100,7 @@ def notificacion_pagopar(request):
             return JsonResponse({'status': 'error'}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
+# 7. GENERAR PAGO
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
@@ -134,10 +144,7 @@ def generar_pago_pagopar(request):
             hash_pago = resultado['resultado'][0]['data']
             return redirect(f"https://www.pagopar.com/pagos/{hash_pago}")
         else:
-            msg = str(resultado.get('resultado', 'Error desconocido'))
-            perfil = PerfilSuscripcion.objects.get(usuario=request.user)
-            return render(request, 'pago.html', {'perfil': perfil, 'error_pago': f'Pagopar: {msg}'})
+            return render(request, 'pago.html', {'error_pago': f'Pagopar: {resultado.get("resultado")}'})
             
     except Exception as e:
-        perfil = PerfilSuscripcion.objects.get(usuario=request.user)
-        return render(request, 'pago.html', {'perfil': perfil, 'error_pago': f'Error: {str(e)}'})
+        return render(request, 'pago.html', {'error_pago': f'Error técnico: {str(e)}'})
