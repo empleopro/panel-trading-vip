@@ -9,11 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse # <--- AGREGAMOS ESTO
 from django.views.decorators.csrf import csrf_exempt
 from .models import SenalTrading, PerfilSuscripcion
 
-# 1. VISTA DEL PANEL
+# --- VISTAS ---
+
 @login_required(login_url='/login/')
 def inicio_panel(request):
     try:
@@ -23,19 +24,17 @@ def inicio_panel(request):
         senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
         return render(request, 'panel.html', {'senales': senales})
     except Exception as e:
-        return JsonResponse({'error': f'Error en panel: {str(e)}'}, status=500)
+        return HttpResponse(f"Error en panel: {str(e)}")
 
-# 2. VISTA DE PAGO (Con detector de errores)
 @login_required(login_url='/login/')
 def pagina_pago(request):
+    # PRUEBA DE DEBUG: Si esto muestra texto en pantalla, el problema es el HTML.
     try:
-        perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
-        return render(request, 'pago.html', {'perfil': perfil, 'error_pago': None})
+        user = request.user
+        return HttpResponse(f"El sistema está funcionando. Usuario detectado: {user.username}. Si ves este mensaje, el código no tiene error, el problema es tu archivo pago.html.")
     except Exception as e:
-        # Si falla, esto imprimirá el error exacto en la página en lugar de 500
-        return render(request, 'pago.html', {'error_pago': f"ERROR DE BASE DE DATOS: {str(e)}"})
+        return HttpResponse(f"Error crítico en pagina_pago: {str(e)}")
 
-# 3. VISTA DE LOGIN
 def vista_login(request):
     error = None
     if request.method == 'POST':
@@ -49,7 +48,6 @@ def vista_login(request):
             error = 'Usuario o contraseña incorrectos.'
     return render(request, 'login.html', {'error': error})
 
-# 4. VISTA DE REGISTRO
 def vista_registro(request):
     error = None
     if request.method == 'POST':
@@ -64,7 +62,6 @@ def vista_registro(request):
             error = 'Usuario ya existe.'
     return render(request, 'registro.html', {'error': error})
 
-# 5. WEBHOOK SEÑALES
 @csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
@@ -80,7 +77,6 @@ def recibir_senal(request):
             return JsonResponse({'status': 'error', 'msg': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# 6. WEBHOOK PAGOPAR
 @csrf_exempt
 def notificacion_pagopar(request):
     if request.method == 'POST':
@@ -100,7 +96,6 @@ def notificacion_pagopar(request):
             return JsonResponse({'status': 'error'}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# 7. GENERAR PAGO
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
@@ -144,7 +139,7 @@ def generar_pago_pagopar(request):
             hash_pago = resultado['resultado'][0]['data']
             return redirect(f"https://www.pagopar.com/pagos/{hash_pago}")
         else:
-            return render(request, 'pago.html', {'error_pago': f'Pagopar: {resultado.get("resultado")}'})
+            return HttpResponse(f"Error de Pagopar: {str(resultado)}")
             
     except Exception as e:
-        return render(request, 'pago.html', {'error_pago': f'Error técnico: {str(e)}'})
+        return HttpResponse(f"Error técnico al conectar con Pagopar: {str(e)}")
