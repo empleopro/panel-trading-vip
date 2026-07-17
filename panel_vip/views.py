@@ -115,7 +115,6 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    # LLAVES FIJAS PARA EVITAR ERRORES DE RENDER
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
     private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
@@ -125,7 +124,6 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto_str}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Pagopar a veces exige que el pedido tenga fecha de vencimiento (le damos 3 días)
     fecha_maxima = (timezone.now() + timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')
     
     datos_pedido = {
@@ -133,7 +131,7 @@ def generar_pago_pagopar(request):
         "public_key": public_key,
         "monto_total": 120000,
         "tipo_pedido": "VENTA-COMERCIO",
-        "id_pedido_comercio": pedido_id,   # <-- ACÁ ESTABA EL ERROR: Tenía que llamarse id_pedido_comercio
+        "id_pedido_comercio": pedido_id,   
         "fecha_maxima_pago": fecha_maxima, 
         "comprador": {
             "ruc": "", 
@@ -148,7 +146,7 @@ def generar_pago_pagopar(request):
             "tipo_documento": "CI",
             "direccion_referencia": ""
         },
-        "compras_articulos": [
+        "compras_items": [   # <--- ACÁ ESTÁ EL CAMBIO. Antes decía compras_articulos
             {
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
