@@ -109,12 +109,14 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
+    # Hemos blindado el JSON con absolutamente todos los campos requeridos y opcionales
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
         "monto_total": monto,
         "tipo_pedido": "VENTA-COMERCIO",
         "id_pedido_comercio": pedido_id,
+        "descripcion_resumen": "Suscripcion Panel VIP",
         "comprador": {
             "ruc": "4444444-4",
             "email": "cliente@vip.com",
@@ -122,7 +124,8 @@ def generar_pago_pagopar(request):
             "telefono": "0981000000",
             "documento": "4444444",
             "tipo_documento": "CI",
-            "ciudad": 1
+            "ciudad": 1,
+            "direccion": "Itaugua Centro" 
         },
         "compras_items": [
             {
@@ -131,8 +134,15 @@ def generar_pago_pagopar(request):
                 "cantidad": 1,
                 "precio_total_articulo": monto,
                 "ciudad": 1,
-                "vendedor_direccion": "Centro",
-                "categoria": 909
+                "vendedor_telefono": "0981000000",
+                "vendedor_direccion": "Itaugua",
+                "vendedor_direccion_referencia": "Itaugua Centro",
+                "vendedor_direccion_coordenadas": "-25.3884,-57.3364", 
+                "categoria": 909,
+                "peso": 1,
+                "largo": 1,
+                "ancho": 1,
+                "alto": 1
             }
         ]
     }
