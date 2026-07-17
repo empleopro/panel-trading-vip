@@ -124,10 +124,7 @@ def generar_pago_pagopar(request):
                 "public_key": public_key,
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
-                "precio_total_articulo": monto,
-                "ciudad": "Itaugua",
-                "vendedor_direccion": "Itaugua",
-                "categoria": "1"
+                "precio_total_articulo": monto
             }
         ]
     }
