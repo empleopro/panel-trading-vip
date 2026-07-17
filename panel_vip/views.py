@@ -25,7 +25,8 @@ def inicio_panel(request):
 
 @login_required(login_url='/login/')
 def pagina_pago(request):
-    perfil = PerfilSuscripcion.objects.get(usuario=request.user)
+    # CORRECCIÓN: Usamos get_or_create para evitar el error 500 si el perfil no existe
+    perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
     return render(request, 'pago.html', {'perfil': perfil, 'error_pago': None})
 
 def vista_login(request):
@@ -48,6 +49,7 @@ def vista_registro(request):
         contra = request.POST.get('password')
         try:
             user = User.objects.create_user(username=usuario, password=contra)
+            # Creamos el perfil al registrar
             PerfilSuscripcion.objects.create(usuario=user)
             login(request, user)
             return redirect('inicio_panel')
@@ -91,7 +93,6 @@ def notificacion_pagopar(request):
 
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    # Credenciales fijas para evitar fallos de lectura de Render
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
     private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
@@ -120,8 +121,7 @@ def generar_pago_pagopar(request):
                 "public_key": public_key,
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
-                "precio_total_articulo": monto,
-                "categoria": 1
+                "precio_total_articulo": monto
             }
         ]
     }
@@ -135,7 +135,9 @@ def generar_pago_pagopar(request):
             return redirect(f"https://www.pagopar.com/pagos/{hash_pago}")
         else:
             msg = str(resultado.get('resultado', 'Error desconocido'))
-            return render(request, 'pago.html', {'perfil': PerfilSuscripcion.objects.get(usuario=request.user), 'error_pago': f'Pagopar: {msg}'})
+            perfil = PerfilSuscripcion.objects.get(usuario=request.user)
+            return render(request, 'pago.html', {'perfil': perfil, 'error_pago': f'Pagopar: {msg}'})
             
     except Exception as e:
-        return render(request, 'pago.html', {'perfil': PerfilSuscripcion.objects.get(usuario=request.user), 'error_pago': f'Error: {str(e)}'})
+        perfil = PerfilSuscripcion.objects.get(usuario=request.user)
+        return render(request, 'pago.html', {'perfil': perfil, 'error_pago': f'Error: {str(e)}'})
