@@ -22,7 +22,7 @@ def inicio_panel(request):
     senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
     return render(request, 'panel.html', {'senales': senales})
 
-# 2. VISTA DE PAGO (Volvemos a usar render)
+# 2. VISTA DE PAGO
 @login_required(login_url='/login/')
 def pagina_pago(request):
     perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
@@ -116,7 +116,8 @@ def generar_pago_pagopar(request):
             "nombre": request.user.username,
             "telefono": "0981000000",
             "documento": "4444444",
-            "tipo_documento": "CI"
+            "tipo_documento": "CI",
+            "ciudad": "Itaugua"
         },
         "compras_items": [
             {
