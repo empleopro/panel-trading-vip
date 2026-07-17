@@ -109,6 +109,7 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
+    # Hemos convertido los IDs conflictivos a cadenas de texto ("1", "909")
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
@@ -127,27 +128,23 @@ def generar_pago_pagopar(request):
             "razon_social": "Cliente VIP",
             "tipo_documento": "CI",
             "direccion_referencia": "Centro",
-            "ciudad": 1
+            "ciudad": "1"  # <--- COMO STRING
         },
         "compras_items": [
             {
-                "ciudad": 1,
+                "ciudad": "1",  # <--- COMO STRING
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
-                "categoria": 909,
+                "categoria": "909",  # <--- COMO STRING
                 "public_key": public_key,
                 "url_imagen": "https://ui-avatars.com/api/?name=VIP&background=0D8ABC&color=fff",
                 "descripcion": "Acceso al panel de senales VIP",
-                "id_producto": 1,  # <--- ESTE ES EL CAMPO QUE EVITA EL ERROR DE MONTO 0
+                "id_producto": "1",  # <--- COMO STRING
                 "precio_total_articulo": monto,
                 "vendedor_telefono": "0981000000",
                 "vendedor_direccion": "Itaugua",
                 "vendedor_direccion_referencia": "Centro",
-                "vendedor_direccion_coordenadas": "-25.3884,-57.3364", 
-                "peso": 1,
-                "largo": 1,
-                "ancho": 1,
-                "alto": 1
+                "vendedor_direccion_coordenadas": "-25.3884,-57.3364"
             }
         ]
     }
