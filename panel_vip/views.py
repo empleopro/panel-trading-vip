@@ -57,12 +57,11 @@ def vista_registro(request):
             error = 'Usuario ya existe.'
     return render(request, 'registro.html', {'error': error})
 
-# 5. WEBHOOK SEÑALES (MEJORADO PARA LEER JSON DE MT5)
+# 5. WEBHOOK SEÑALES
 @csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
         try:
-            # Detectar si MT5 envía los datos como JSON o Formulario
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
             else:
@@ -99,7 +98,7 @@ def notificacion_pagopar(request):
             return JsonResponse({'status': 'error'}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# 7. GENERAR PAGO (Corregido con ID numérico para ciudad y categoria)
+# 7. GENERAR PAGO
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
@@ -123,7 +122,7 @@ def generar_pago_pagopar(request):
             "telefono": "0981000000",
             "documento": "4444444",
             "tipo_documento": "CI",
-            "ciudad": 1  # DEBE SER EL ID NUMÉRICO DE LA CIUDAD
+            "ciudad": 1
         },
         "compras_items": [
             {
@@ -131,9 +130,9 @@ def generar_pago_pagopar(request):
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
                 "precio_total_articulo": monto,
-                "ciudad": 1,  # ID de la ciudad (Asunción por defecto)
+                "ciudad": 1,
                 "vendedor_direccion": "Centro",
-                "categoria": 999  # ID numérico de la categoría "Otros/Servicios"
+                "categoria": 909
             }
         ]
     }
