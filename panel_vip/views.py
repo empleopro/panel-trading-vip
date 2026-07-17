@@ -97,7 +97,6 @@ def notificacion_pagopar(request):
             estado = data.get('estado') 
             id_pedido = data.get('id_pedido') 
             
-            # Limpiamos el ID (porque Pagopar recibe Usuario-FechaHora)
             nombre_usuario = id_pedido.split('-')[0]
             
             if estado == 'pagado':
@@ -116,17 +115,21 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
-    private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
+    # Agrego tus llaves exactas como respaldo de seguridad
+    public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', 'bbf20284bb1e86aa4cd15bf76251b11a')
+    private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '6d5adfcf2bc5499b4b756e672a1a4792')
     
-    pedido_id = f"{request.user.username}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    # Limpiamos el nombre de usuario por si le pusiste un guión
+    nombre_limpio = request.user.username.replace("-", "")
+    pedido_id = f"{nombre_limpio}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
     monto_str = "120000" 
     
+    # Cifrado obligatorio
     cadena = private_key + pedido_id + monto_str
-    token_seguridad = hashlib.sha1(cadena.encode()).hexdigest()
+    token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
     datos_pedido = {
-        "token": public_key,
+        "token": token_seguridad,  # <--- ACÁ ESTABA EL ERROR. Ahora sí mandamos el cifrado donde va.
         "comprador": {
             "ruc": "4444444-4", 
             "email": "cliente@vip.com",
@@ -139,21 +142,20 @@ def generar_pago_pagopar(request):
             "razon_social": request.user.username
         },
         "public_key": public_key,
-        "monto_total": monto_str,
-        "token_operacion": token_seguridad,
+        "monto_total": int(monto_str), # Pasamos los montos a números puros
+        "tipo_pedido": "VENTA-COMERCIO",
         "compras_articulos": [
             {
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
-                "precio_total_articulo": monto_str,
+                "precio_total_articulo": int(monto_str),
                 "vendedor_telefono": "", "vendedor_direccion": "", "vendedor_direccion_referencia": "",
                 "vendedor_ruc": "", "proveedor": "Panel VIP", "ciudad": 1, "categoria": 1,
                 "peso": 0, "longitud": 0, "ancho": 0, "alto": 0, "url_imagen": ""
             }
         ],
         "pedido_id": pedido_id,
-        "tipo_pedido": "VENTA-COMERCIO",
-        "descripciones": [{"monto": monto_str, "descripcion": "Suscripcion VIP"}]
+        "descripciones": [{"monto": int(monto_str), "descripcion": "Suscripcion VIP"}]
     }
     
     try:
@@ -164,9 +166,7 @@ def generar_pago_pagopar(request):
             hash_pago = resultado['resultado'][0]['data']
             return redirect(f"https://www.pagopar.com/pagos/{hash_pago}")
         else:
-            # ACÁ CAPTURAMOS EL ERROR REAL DE PAGOPAR
             error_real = resultado.get('resultado', 'Error desconocido')
-            print(f"❌ PAGOPAR RECHAZÓ EL PEDIDO: {error_real}") 
             return render(request, 'pago.html', {'error_pago': f'Pagopar dice: {error_real}'})
             
     except Exception as e:
