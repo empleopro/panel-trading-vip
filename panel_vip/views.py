@@ -127,7 +127,7 @@ def generar_pago_pagopar(request):
                 "precio_total_articulo": monto,
                 "ciudad": "Itaugua",
                 "vendedor_direccion": "Itaugua",
-                "categoria": 1
+                "categoria": "1"
             }
         ]
     }
