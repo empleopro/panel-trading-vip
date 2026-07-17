@@ -5,39 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suscripción VIP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0a0e14; --text-blue: #58a6ff; --card-bg: #0d1117; }
-        body { background-color: var(--bg-dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .payment-container { background-color: var(--card-bg); padding: 2rem; border-radius: 10px; border: 1px solid #30363d; width: 100%; max-width: 500px; text-align: center; }
-        .btn-pagopar { background-color: #198754; color: white; width: 100%; padding: 1rem; font-weight: bold; border: none; border-radius: 5px; margin: 1rem 0; }
-        .btn-pagopar:hover { background-color: #157347; }
-        .bank-details { border: 1px dashed #30363d; padding: 1rem; border-radius: 5px; text-align: left; margin-top: 1rem; font-size: 0.9rem; color: #c9d1d9; }
+        :root {
+            --bg-terminal: #0a0e14;
+            --bg-card: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+        }
+        body { 
+            background-color: var(--bg-terminal); 
+            color: var(--text-primary); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0;
+        }
+        .payment-container { 
+            background-color: var(--bg-card); 
+            padding: 3rem 2rem; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            width: 100%; 
+            max-width: 450px; 
+            text-align: center; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        .badge-acceso {
+            display: inline-block;
+            color: #f85149;
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.4);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+        h1 { font-size: 2rem; font-weight: 600; color: #58a6ff; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        .price { font-size: 2rem; font-weight: 700; color: #3fb950; margin-bottom: 1.5rem; }
+        .price small { font-size: 1rem; color: var(--text-secondary); font-weight: normal; }
+        .btn-pagopar { 
+            background-color: #238636; 
+            color: white; 
+            width: 100%; 
+            padding: 1rem; 
+            font-weight: 700; 
+            font-size: 1.1rem;
+            border: none; 
+            border-radius: 6px; 
+            margin-bottom: 1rem; 
+            transition: background-color 0.2s;
+        }
+        .btn-pagopar:hover { background-color: #2ea043; }
+        .info-text { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem; }
+        .divider { 
+            display: flex; 
+            align-items: center; 
+            text-align: center; 
+            color: var(--text-secondary); 
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .divider:not(:empty)::before { margin-right: .25em; }
+        .divider:not(:empty)::after { margin-left: .25em; }
+        .bank-details { 
+            border: 1px dashed #58a6ff; 
+            background: rgba(88, 166, 255, 0.05);
+            padding: 1.5rem; 
+            border-radius: 8px; 
+            text-align: left; 
+            font-size: 0.95rem; 
+            color: #c9d1d9; 
+            line-height: 1.8;
+        }
+        .bank-details strong { color: #58a6ff; }
     </style>
 </head>
 <body>
 
 <div class="payment-container">
-    <div class="text-danger mb-3">ACCESO RESTRINGIDO</div>
-    <h1 class="mb-2">Renová tu Suscripción</h1>
-    <p class="text-muted mb-4">Elegí tu método de pago para activar tu acceso al instante y seguir recibiendo las señales VIP.</p>
+    <div class="badge-acceso"><i class="fas fa-lock"></i> ACCESO RESTRINGIDO</div>
     
-    <h2 class="text-success mb-3">Gs. 120.000 <small class="text-muted">/ mes</small></h2>
+    <h1>Renová tu Suscripción</h1>
+    <p class="subtitle">Elegí tu método de pago para activar tu acceso al instante y seguir recibiendo las señales VIP.</p>
+    
+    <div class="price">Gs. 120.000 <small>/ mes</small></div>
 
     <form action="{% url 'checkout_pagopar' %}" method="POST">
         {% csrf_token %}
-        <button type="submit" class="btn-pagopar">PAGO AUTOMÁTICO</button>
+        <button type="submit" class="btn-pagopar"><i class="fas fa-bolt"></i> PAGO AUTOMÁTICO</button>
     </form>
     
-    <p class="text-muted small">Activación inmediata las 24hs (QR / Tarjeta).</p>
+    <p class="info-text">Activación inmediata las 24hs (QR / Tarjeta).</p>
 
-    <hr class="border-secondary">
+    <div class="divider">O pago manual (SIPAP)</div>
     
-    <div class="text-muted mb-2">O pago manual (SIPAP)</div>
     <div class="bank-details">
-        <p><strong>Banco:</strong> Ueno Bank</p>
-        <p><strong>Titular:</strong> Hugo Cesar Gimenez Collante</p>
-        <p><strong>C.I. / Alias:</strong> 4470307</p>
-        <p><strong>Nro de Cuenta:</strong> 6192075262</p>
+        <div><strong>Banco:</strong> Ueno Bank</div>
+        <div><strong>Titular:</strong> Hugo Cesar Gimenez Collante</div>
+        <div><strong>C.I. / Alias:</strong> 4470307</div>
+        <div><strong>Nro de Cuenta:</strong> 6192075262</div>
     </div>
 </div>
 

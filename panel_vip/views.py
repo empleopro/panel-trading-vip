@@ -57,16 +57,22 @@ def vista_registro(request):
             error = 'Usuario ya existe.'
     return render(request, 'registro.html', {'error': error})
 
-# 5. WEBHOOK SEÑALES
+# 5. WEBHOOK SEÑALES (MEJORADO PARA LEER JSON DE MT5)
 @csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
         try:
-            simbolo = request.POST.get('simbolo', 'XAUUSD')
-            tipo = request.POST.get('tipo', 'BUY')
-            precio = request.POST.get('precio', 0)
-            sl = request.POST.get('sl', 0)
-            tp = request.POST.get('tp', 0)
+            # Detectar si MT5 envía los datos como JSON o Formulario
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+            else:
+                data = request.POST
+
+            simbolo = data.get('simbolo', 'XAUUSD')
+            tipo = data.get('tipo', 'BUY')
+            precio = data.get('precio', 0)
+            sl = data.get('sl', 0)
+            tp = data.get('tp', 0)
             SenalTrading.objects.create(activo=simbolo, tipo=tipo, precio_entrada=precio, sl=sl, tp=tp)
             return JsonResponse({'status': 'ok'})
         except Exception as e:
@@ -93,7 +99,7 @@ def notificacion_pagopar(request):
             return JsonResponse({'status': 'error'}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# 7. GENERAR PAGO
+# 7. GENERAR PAGO (Corregido con ID numérico para ciudad y categoria)
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
@@ -117,7 +123,7 @@ def generar_pago_pagopar(request):
             "telefono": "0981000000",
             "documento": "4444444",
             "tipo_documento": "CI",
-            "ciudad": "Itaugua"
+            "ciudad": 1  # DEBE SER EL ID NUMÉRICO DE LA CIUDAD
         },
         "compras_items": [
             {
@@ -125,9 +131,9 @@ def generar_pago_pagopar(request):
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
                 "precio_total_articulo": monto,
-                "ciudad": "Itaugua",
-                "vendedor_direccion": "Itaugua",
-                "categoria": 1
+                "ciudad": 1,  # ID de la ciudad (Asunción por defecto)
+                "vendedor_direccion": "Centro",
+                "categoria": 999  # ID numérico de la categoría "Otros/Servicios"
             }
         ]
     }
