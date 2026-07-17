@@ -3,26 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Renovación VIP</title>
-    <style>
-        body { background: #0f0f0f; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
-        .box { border: 1px solid #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-        .btn { background: #00c853; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: block; margin: 20px 0; border: none; cursor: pointer; width: 100%; font-size: 16px; }
-        .error { color: #ff5252; background: #3d1c1c; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ff5252; }
-    </style>
 </head>
 <body>
-    <div class="box">
-        <h1>Renová tu Suscripción</h1>
-        <p>Gs. 120.000 / mes</p>
+    <h1>Renová tu Suscripción</h1>
+    <p>Usuario: {{ request.user.username }}</p>
 
-        {% if error_pago %}
-            <div class="error">{{ error_pago }}</div>
-        {% endif %}
-
-        <form action="{% url 'generar_pago_pagopar' %}" method="POST">
-            {% csrf_token %}
-            <button type="submit" class="btn">PAGO AUTOMÁTICO</button>
-        </form>
-    </div>
+    <form action="{% url 'generar_pago_pagopar' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit">PAGAR 120.000 Gs</button>
+    </form>
 </body>
 </html>
