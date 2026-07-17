@@ -28,7 +28,7 @@ def inicio_panel(request):
 @login_required(login_url='/login/')
 def pagina_pago(request):
     perfil = PerfilSuscripcion.objects.get(usuario=request.user)
-    return render(request, 'pago.html', {'perfil': perfil})
+    return render(request, 'pago.html', {'perfil': perfil, 'error_pago': None})
 
 # 3. VISTA DE INICIO DE SESIÓN
 def vista_login(request):
@@ -116,24 +116,19 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    # Traemos las llaves de Render
     public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', '')
     private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '')
     
-    # Creamos un ID de pedido único (Ejemplo: Hugo-20260717143000)
     pedido_id = f"{request.user.username}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
-    
-    # === ACÁ PONÉS EL PRECIO DE TU VIP EN GUARANÍES (Sin puntos ni comas) ===
     monto_str = "120000" 
     
-    # Cifrado de seguridad obligatorio de Pagopar
     cadena = private_key + pedido_id + monto_str
     token_seguridad = hashlib.sha1(cadena.encode()).hexdigest()
     
     datos_pedido = {
         "token": public_key,
         "comprador": {
-            "ruc": "4444444-4", # Genérico, no hace falta pedirle al cliente
+            "ruc": "4444444-4", 
             "email": "cliente@vip.com",
             "ciudad": 1,
             "nombre": request.user.username,
@@ -148,7 +143,7 @@ def generar_pago_pagopar(request):
         "token_operacion": token_seguridad,
         "compras_articulos": [
             {
-                "nombre_articulo": "Acceso VIP 30 Días - Señales de Trading",
+                "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
                 "precio_total_articulo": monto_str,
                 "vendedor_telefono": "", "vendedor_direccion": "", "vendedor_direccion_referencia": "",
@@ -158,7 +153,7 @@ def generar_pago_pagopar(request):
         ],
         "pedido_id": pedido_id,
         "tipo_pedido": "VENTA-COMERCIO",
-        "descripciones": [{"monto": monto_str, "descripcion": "Suscripción VIP"}]
+        "descripciones": [{"monto": monto_str, "descripcion": "Suscripcion VIP"}]
     }
     
     try:
@@ -166,11 +161,13 @@ def generar_pago_pagopar(request):
         resultado = respuesta.json()
         
         if resultado.get('respuesta') == True:
-            # Si todo sale bien, Pagopar nos da un código y mandamos al cliente ahí
             hash_pago = resultado['resultado'][0]['data']
             return redirect(f"https://www.pagopar.com/pagos/{hash_pago}")
         else:
-            return render(request, 'pago.html', {'error_pago': 'No se pudo generar el link. Revisá la consola.'})
+            # ACÁ CAPTURAMOS EL ERROR REAL DE PAGOPAR
+            error_real = resultado.get('resultado', 'Error desconocido')
+            print(f"❌ PAGOPAR RECHAZÓ EL PEDIDO: {error_real}") 
+            return render(request, 'pago.html', {'error_pago': f'Pagopar dice: {error_real}'})
             
     except Exception as e:
-        return render(request, 'pago.html', {'error_pago': f'Error de conexión.'})
+        return render(request, 'pago.html', {'error_pago': f'Error de conexión: {str(e)}'})
