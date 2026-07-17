@@ -97,7 +97,6 @@ def notificacion_pagopar(request):
             estado = data.get('estado') 
             id_pedido = data.get('id_pedido') 
             
-            # Ahora el id_pedido viene 100% numérico, ej: "1-1721235678"
             user_id = id_pedido.split('-')[0]
             
             if estado == 'pagado':
@@ -116,30 +115,26 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    # Usamos strip() por si en Render se guardó con un espacio invisible
-    public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', '').strip()
-    if not public_key:
-        public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
-        
-    private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '').strip()
-    if not private_key:
-        private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
+    # LLAVES FIJAS PARA EVITAR ERRORES DE RENDER
+    public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
+    private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
-    # CLAVE DEL ARREGLO: Usamos el ID (número) del usuario en vez de su nombre.
-    # Así matamos de raíz cualquier posibilidad de error por espacios o símbolos.
     pedido_id = f"{request.user.id}-{int(timezone.now().timestamp())}"
     monto_str = "120000" 
     
-    # Cifrado obligatorio sin espacios intermedios
     cadena = f"{private_key}{pedido_id}{monto_str}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
+    
+    # Pagopar a veces exige que el pedido tenga fecha de vencimiento (le damos 3 días)
+    fecha_maxima = (timezone.now() + timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')
     
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
         "monto_total": 120000,
         "tipo_pedido": "VENTA-COMERCIO",
-        "pedido_id": pedido_id,
+        "id_pedido_comercio": pedido_id,   # <-- ACÁ ESTABA EL ERROR: Tenía que llamarse id_pedido_comercio
+        "fecha_maxima_pago": fecha_maxima, 
         "comprador": {
             "ruc": "", 
             "email": "cliente@vip.com",
@@ -150,8 +145,8 @@ def generar_pago_pagopar(request):
             "documento": "4444444",
             "coordenadas": "",
             "razon_social": request.user.username if request.user.username else "Cliente",
-            "tipo_documento": "CI",          # <-- Campo requerido
-            "direccion_referencia": ""       # <-- Campo requerido
+            "tipo_documento": "CI",
+            "direccion_referencia": ""
         },
         "compras_articulos": [
             {
