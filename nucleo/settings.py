@@ -14,10 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-n_at55-8qrl-nws_bi+e(7bw$wljh_l34l!an#s9)xsdu#d_aa'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# ACÁ CAMBIAMOS A FALSE PARA APAGAR LA PANTALLA AMARILLA DE DESARROLLADOR
+DEBUG = False
 
 # Permitimos cualquier host para que funcione tanto local como en Render
 ALLOWED_HOSTS = ['*']
+
+# Le decimos a Django que confíe plenamente en este dominio para los inicios de sesión (Evita el error 403)
+CSRF_TRUSTED_ORIGINS = ['https://panel-trading-vip.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
