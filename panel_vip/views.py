@@ -47,7 +47,7 @@ def vista_login(request):
             
     return render(request, 'login.html', {'error': error})
 
-# 4. VISTA DE REGISTRO PARA TIKTOK
+# 4. VISTA DE REGISTRO
 def vista_registro(request):
     error = None
     if request.method == 'POST':
@@ -88,7 +88,7 @@ def recibir_senal(request):
             return JsonResponse({'status': 'error', 'mensaje': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# 6. WEBHOOK PARA RECIBIR PAGOS DE PAGOPAR (AUTOMATIZACIÓN)
+# 6. WEBHOOK PARA RECIBIR PAGOS DE PAGOPAR
 @csrf_exempt
 def notificacion_pagopar(request):
     if request.method == 'POST':
@@ -97,10 +97,11 @@ def notificacion_pagopar(request):
             estado = data.get('estado') 
             id_pedido = data.get('id_pedido') 
             
-            nombre_usuario = id_pedido.split('-')[0]
+            # Ahora el id_pedido viene 100% numérico, ej: "1-1721235678"
+            user_id = id_pedido.split('-')[0]
             
             if estado == 'pagado':
-                usuario = User.objects.get(username=nombre_usuario)
+                usuario = User.objects.get(id=user_id)
                 perfil = PerfilSuscripcion.objects.get(usuario=usuario)
                 perfil.estado = 'ACTIVO'
                 perfil.fecha_fin_acceso = timezone.now() + timedelta(days=30)
@@ -115,51 +116,73 @@ def notificacion_pagopar(request):
 # 7. BOTÓN: GENERAR LINK DE PAGOPAR Y REDIRIGIR
 @login_required(login_url='/login/')
 def generar_pago_pagopar(request):
-    # Agrego tus llaves exactas como respaldo de seguridad
-    public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', 'bbf20284bb1e86aa4cd15bf76251b11a')
-    private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '6d5adfcf2bc5499b4b756e672a1a4792')
+    # Usamos strip() por si en Render se guardó con un espacio invisible
+    public_key = os.environ.get('PAGOPAR_PUBLIC_KEY', '').strip()
+    if not public_key:
+        public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
+        
+    private_key = os.environ.get('PAGOPAR_PRIVATE_KEY', '').strip()
+    if not private_key:
+        private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
-    # Limpiamos el nombre de usuario por si le pusiste un guión
-    nombre_limpio = request.user.username.replace("-", "")
-    pedido_id = f"{nombre_limpio}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    # CLAVE DEL ARREGLO: Usamos el ID (número) del usuario en vez de su nombre.
+    # Así matamos de raíz cualquier posibilidad de error por espacios o símbolos.
+    pedido_id = f"{request.user.id}-{int(timezone.now().timestamp())}"
     monto_str = "120000" 
     
-    # Cifrado obligatorio
-    cadena = private_key + pedido_id + monto_str
+    # Cifrado obligatorio sin espacios intermedios
+    cadena = f"{private_key}{pedido_id}{monto_str}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
     datos_pedido = {
-        "token": token_seguridad,  # <--- ACÁ ESTABA EL ERROR. Ahora sí mandamos el cifrado donde va.
+        "token": token_seguridad,
+        "public_key": public_key,
+        "monto_total": 120000,
+        "tipo_pedido": "VENTA-COMERCIO",
+        "pedido_id": pedido_id,
         "comprador": {
-            "ruc": "4444444-4", 
+            "ruc": "", 
             "email": "cliente@vip.com",
             "ciudad": 1,
-            "nombre": request.user.username,
+            "nombre": request.user.username if request.user.username else "Cliente",
             "telefono": "0981000000",
-            "direccion": "Digital",
+            "direccion": "",
             "documento": "4444444",
             "coordenadas": "",
-            "razon_social": request.user.username
+            "razon_social": request.user.username if request.user.username else "Cliente",
+            "tipo_documento": "CI",          # <-- Campo requerido
+            "direccion_referencia": ""       # <-- Campo requerido
         },
-        "public_key": public_key,
-        "monto_total": int(monto_str), # Pasamos los montos a números puros
-        "tipo_pedido": "VENTA-COMERCIO",
         "compras_articulos": [
             {
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
-                "precio_total_articulo": int(monto_str),
-                "vendedor_telefono": "", "vendedor_direccion": "", "vendedor_direccion_referencia": "",
-                "vendedor_ruc": "", "proveedor": "Panel VIP", "ciudad": 1, "categoria": 1,
-                "peso": 0, "longitud": 0, "ancho": 0, "alto": 0, "url_imagen": ""
+                "precio_total_articulo": 120000,
+                "vendedor_telefono": "", 
+                "vendedor_direccion": "", 
+                "vendedor_direccion_referencia": "",
+                "vendedor_ruc": "", 
+                "proveedor": "Panel VIP", 
+                "ciudad": 1, 
+                "categoria": 1,
+                "peso": 0, 
+                "longitud": 0, 
+                "ancho": 0, 
+                "alto": 0, 
+                "url_imagen": ""
             }
         ],
-        "pedido_id": pedido_id,
-        "descripciones": [{"monto": int(monto_str), "descripcion": "Suscripcion VIP"}]
+        "descripciones": [
+            {
+                "monto": 120000, 
+                "descripcion": "Suscripcion VIP"
+            }
+        ]
     }
     
     try:
-        respuesta = requests.post("https://api.pagopar.com/api/comercios/1.1/iniciar-transaccion", json=datos_pedido)
+        headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        respuesta = requests.post("https://api.pagopar.com/api/comercios/1.1/iniciar-transaccion", json=datos_pedido, headers=headers)
         resultado = respuesta.json()
         
         if resultado.get('respuesta') == True:
