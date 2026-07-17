@@ -146,8 +146,9 @@ def generar_pago_pagopar(request):
             "tipo_documento": "CI",
             "direccion_referencia": ""
         },
-        "compras_items": [   # <--- ACÁ ESTÁ EL CAMBIO. Antes decía compras_articulos
+        "compras_items": [   
             {
+                "public_key": public_key, # <--- ACÁ ESTÁ EL CAMBIO NUEVO
                 "nombre_articulo": "Acceso VIP 30 Dias",
                 "cantidad": 1,
                 "precio_total_articulo": 120000,
