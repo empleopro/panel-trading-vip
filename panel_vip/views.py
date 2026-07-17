@@ -7,6 +7,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import SenalTrading, PerfilSuscripcion
 
+# Importes necesarios para Pagopar
+import json
+from django.utils import timezone
+from datetime import timedelta
+
 # 1. VISTA DEL PANEL (Protegida)
 @login_required(login_url='/login/')
 def inicio_panel(request):
@@ -73,11 +78,11 @@ def recibir_senal(request):
             
             # Guardado en base de datos usando los nombres exactos de tu models.py
             SenalTrading.objects.create(
-                activo=simbolo,         # Corresponde a models.py (campo 'activo')
-                tipo=tipo,              # Corresponde a models.py (campo 'tipo')
-                precio_entrada=precio,  # Corresponde a models.py (campo 'precio_entrada')
-                sl=sl,                  # Corresponde a models.py (campo 'sl')
-                tp=tp                   # Corresponde a models.py (campo 'tp')
+                activo=simbolo,         
+                tipo=tipo,              
+                precio_entrada=precio,  
+                sl=sl,                  
+                tp=tp                   
             )
             
             print(f"🔥 SEÑAL RECIBIDA Y GUARDADA: {tipo} en {simbolo}")
@@ -88,3 +93,33 @@ def recibir_senal(request):
             return JsonResponse({'status': 'error', 'mensaje': str(e)}, status=500)
     
     return JsonResponse({'status': 'error', 'mensaje': 'Método no permitido'}, status=400)
+
+
+# 6. WEBHOOK PARA RECIBIR PAGOS DE PAGOPAR (AUTOMATIZACIÓN)
+@csrf_exempt
+def notificacion_pagopar(request):
+    if request.method == 'POST':
+        try:
+            # Pagopar avisa acá cuando alguien paga
+            data = json.loads(request.body)
+            estado = data.get('estado') 
+            id_pedido = data.get('id_pedido') # Acá vendrá el nombre de usuario de tu cliente
+            
+            if estado == 'pagado':
+                # Buscamos al usuario y le damos 30 días de acceso VIP
+                usuario = User.objects.get(username=id_pedido)
+                perfil = PerfilSuscripcion.objects.get(usuario=usuario)
+                perfil.estado = 'ACTIVO'
+                perfil.fecha_fin_acceso = timezone.now() + timedelta(days=30)
+                perfil.save()
+                
+                print(f"✅ PAGO APROBADO: Acceso VIP activado para {id_pedido}")
+                return JsonResponse({'status': 'ok'})
+            
+            return JsonResponse({'status': 'pendiente'})
+            
+        except Exception as e:
+            print(f"❌ ERROR EN PAGOPAR: {str(e)}")
+            return JsonResponse({'status': 'error'}, status=500)
+    
+    return JsonResponse({'status': 'error'}, status=400)
