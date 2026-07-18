@@ -65,28 +65,28 @@ def recibir_senal(request):
             print("--- SEÑAL RECIBIDA DESDE MT5 ---")
             
             if request.content_type == 'application/json':
-                data = json.loads(request.body)
+                # ACÁ ESTÁ LA MAGIA: Limpiamos los caracteres invisibles de MQL5
+                cuerpo_limpio = request.body.decode('utf-8').strip('\x00').strip()
+                data = json.loads(cuerpo_limpio)
             else:
                 data = request.POST
                 
             print("Datos extraídos:", data)
 
-            # Obtenemos todos los datos (incluyendo el lotaje que faltaba)
             simbolo = data.get('simbolo', 'XAUUSD')
             tipo = data.get('tipo', 'BUY')
             precio = data.get('precio', 0)
             sl = data.get('sl', 0)
             tp = data.get('tp', 0)
-            lotaje = data.get('lotaje', 0.01) # <-- ESTO FALTABA
+            lotaje = data.get('lotaje', 0.01)
 
-            # Guardamos en la base de datos CON el lotaje incluido
             SenalTrading.objects.create(
                 activo=simbolo, 
                 tipo=tipo, 
                 precio_entrada=precio, 
                 sl=sl, 
                 tp=tp,
-                lotaje=lotaje # <-- ESTO FALTABA
+                lotaje=lotaje
             )
             
             print("--- SEÑAL GUARDADA EXITOSAMENTE EN LA BASE DE DATOS ---")
@@ -111,10 +111,7 @@ def notificacion_pagopar(request):
                 usuario = User.objects.get(id=user_id)
                 perfil = PerfilSuscripcion.objects.get(usuario=usuario)
                 perfil.estado = 'ACTIVO'
-                
-                # --- ACÁ ESTÁ EL CAMBIO A 15 DÍAS ---
                 perfil.fecha_fin_acceso = timezone.now() + timedelta(days=15)
-                
                 perfil.save()
             return JsonResponse({'status': 'ok'})
         except Exception:
@@ -127,14 +124,12 @@ def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
     private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
     
-    # ID de pedido estrictamente numérico (sin guiones) para evitar el bug de Pagopar
     pedido_id = str(int(timezone.now().timestamp()))
     monto = 120000
     
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Payload estricto basado en la documentación oficial (Mock "Juan Perez")
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
@@ -160,7 +155,7 @@ def generar_pago_pagopar(request):
                 "ciudad": 1,
                 "nombre_articulo": "Panel VIP",
                 "cantidad": 1,
-                "categoria": 2, # 2 es "Servicios", aceptado por defecto
+                "categoria": 2,
                 "public_key": public_key,
                 "url_imagen": "https://www.pagopar.com/images/favicon.png",
                 "descripcion": "Acceso VIP - 15 días",
