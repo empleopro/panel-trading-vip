@@ -103,52 +103,54 @@ def notificacion_pagopar(request):
 def generar_pago_pagopar(request):
     public_key = "bbf20284bb1e86aa4cd15bf76251b11a"
     private_key = "6d5adfcf2bc5499b4b756e672a1a4792"
-    pedido_id = f"{request.user.id}-{int(timezone.now().timestamp())}"
+    
+    # ID de pedido estrictamente numérico (sin guiones) para evitar el bug de Pagopar
+    pedido_id = str(int(timezone.now().timestamp()))
     monto = 120000
     
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # PAYLOAD BLINDADO: 
-    # - Categoria 909 confirmada
-    # - Agregado precio_unitario por si lo requiere
-    # - Forzamos (int) en los montos para evitar cualquier bug de JSON
+    # Payload estricto basado en la documentación oficial (Mock "Juan Perez")
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
-        "monto_total": int(monto),
+        "monto_total": monto,
         "tipo_pedido": "VENTA-COMERCIO",
-        "id_pedido_comercio": str(pedido_id),
+        "id_pedido_comercio": pedido_id,
         "descripcion_resumen": "Suscripcion Panel VIP",
         "comprador": {
-            "ruc": "80000000-5",
-            "email": "cliente@vip.com",
-            "nombre": request.user.username if request.user.username else "Cliente VIP",
-            "telefono": "0981000000",
-            "direccion": "Mcal Estigarribia 123",
-            "documento": "8000000",
+            "ruc": "4444444-4",
+            "email": "juan@gmail.com",
+            "nombre": "Juan Perez",
+            "telefono": "0981222333",
+            "direccion": "Mcal Lopez",
+            "documento": "4444444",
             "coordenadas": "-25.282197,-57.635099",
-            "razon_social": request.user.username if request.user.username else "Cliente VIP",
+            "razon_social": "Juan Perez",
             "tipo_documento": "CI",
-            "direccion_referencia": "Centro",
-            "ciudad": "1"
+            "direccion_referencia": "Casa",
+            "ciudad": 1
         },
         "compras_items": [
             {
-                "ciudad": "1",
-                "nombre_articulo": "Acceso Panel VIP",
+                "ciudad": 1,
+                "nombre_articulo": "Panel VIP",
                 "cantidad": 1,
-                "categoria": "909",
+                "categoria": 2, # 2 es "Servicios", aceptado por defecto
                 "public_key": public_key,
                 "url_imagen": "https://www.pagopar.com/images/favicon.png",
-                "descripcion": "Acceso al panel VIP mensual",
-                "id_producto": 1,
-                "precio_unitario": int(monto),
-                "precio_total_articulo": int(monto),
-                "vendedor_telefono": "0981000000",
-                "vendedor_direccion": "Mcal Estigarribia 123",
-                "vendedor_direccion_referencia": "Centro",
-                "vendedor_direccion_coordenadas": "-25.282197,-57.635099"
+                "descripcion": "Acceso mensual",
+                "id_producto": 100,
+                "precio_total_articulo": monto,
+                "vendedor_telefono": "0981222333",
+                "vendedor_direccion": "Mcal Lopez",
+                "vendedor_direccion_referencia": "Local",
+                "vendedor_direccion_coordenadas": "-25.282197,-57.635099",
+                "peso": 1,
+                "largo": 1,
+                "ancho": 1,
+                "alto": 1
             }
         ]
     }
