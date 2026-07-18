@@ -91,7 +91,10 @@ def notificacion_pagopar(request):
                 usuario = User.objects.get(id=user_id)
                 perfil = PerfilSuscripcion.objects.get(usuario=usuario)
                 perfil.estado = 'ACTIVO'
-                perfil.fecha_fin_acceso = timezone.now() + timedelta(days=30)
+                
+                # --- ACÁ ESTÁ EL CAMBIO A 15 DÍAS ---
+                perfil.fecha_fin_acceso = timezone.now() + timedelta(days=15)
+                
                 perfil.save()
             return JsonResponse({'status': 'ok'})
         except Exception:
@@ -140,7 +143,7 @@ def generar_pago_pagopar(request):
                 "categoria": 2, # 2 es "Servicios", aceptado por defecto
                 "public_key": public_key,
                 "url_imagen": "https://www.pagopar.com/images/favicon.png",
-                "descripcion": "Acceso mensual",
+                "descripcion": "Acceso VIP - 15 días",
                 "id_producto": 100,
                 "precio_total_articulo": monto,
                 "vendedor_telefono": "0981222333",

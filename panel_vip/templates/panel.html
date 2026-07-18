@@ -22,6 +22,7 @@
             --text-secondary: #8b949e;
             --buy-color: #3fb950;
             --sell-color: #f85149;
+            --be-color: #d29922; /* Color mostaza para Break Even */
             --font-sans: 'IBM Plex Sans', sans-serif;
             --font-mono: 'IBM Plex Mono', monospace;
         }
@@ -32,18 +33,31 @@
         .header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
         .header-status { font-size: 0.85rem; color: #58a6ff; background: rgba(88, 166, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 5px; border: 1px solid rgba(88, 166, 255, 0.2); }
         .signal-list { list-style: none; padding: 0; margin: 0; }
-        .signal-item { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 0.8rem; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s ease; }
-        .signal-asset-col { display: flex; align-items: center; flex: 0 0 15%; min-width: 150px; }
+        .signal-item { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 0.8rem; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s ease; position: relative; }
+        .signal-asset-col { display: flex; align-items: center; flex: 0 0 20%; min-width: 180px; }
         .asset-icon-placeholder { width: 40px; height: 40px; background-color: var(--bg-terminal); border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 700; }
-        .asset-name { font-size: 1.25rem; font-weight: 700; text-transform: uppercase; line-height: 1; }
-        .order-type-tag { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-top: 2px; display: inline-block; }
-        .text-buy .order-type-tag { color: var(--buy-color); background: rgba(63, 185, 80, 0.1); }
-        .text-sell .order-type-tag { color: var(--sell-color); background: rgba(248, 81, 73, 0.1); }
+        .asset-name { font-size: 1.25rem; font-weight: 700; text-transform: uppercase; line-height: 1; display: block; margin-bottom: 4px; }
+        
+        .order-type-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+        .text-buy .order-type-tag { color: var(--buy-color); background: rgba(63, 185, 80, 0.1); border: 1px solid rgba(63, 185, 80, 0.2); }
+        .text-sell .order-type-tag { color: var(--sell-color); background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.2); }
+        
+        .lot-tag { font-size: 0.75rem; color: var(--text-secondary); background: var(--bg-terminal); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-family: var(--font-mono); display: inline-block; }
+
         .signal-pricing-col { flex: 1; display: flex; justify-content: space-around; padding: 0 2rem; }
         .price-label-group { display: flex; flex-direction: column; align-items: center; }
         .price-label-text { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1px; }
         .price-value { font-family: var(--font-mono); font-size: 1.1rem; }
-        .signal-meta-col { flex: 0 0 15%; display: flex; flex-direction: column; align-items: flex-end; text-align: right; color: var(--text-secondary); font-size: 0.8rem; }
+        
+        .signal-meta-col { flex: 0 0 15%; display: flex; flex-direction: column; align-items: flex-end; text-align: right; justify-content: center; }
+        
+        /* Estilos para el Resultado de la operación */
+        .result-badge { font-size: 0.85rem; font-weight: 700; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .result-win { background-color: rgba(63, 185, 80, 0.15); color: var(--buy-color); border: 1px solid var(--buy-color); }
+        .result-loss { background-color: rgba(248, 81, 73, 0.15); color: var(--sell-color); border: 1px solid var(--sell-color); }
+        .result-be { background-color: rgba(210, 153, 34, 0.15); color: var(--be-color); border: 1px solid var(--be-color); }
+        
+        .time-text { color: var(--text-secondary); font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -59,13 +73,25 @@
     </div>
 
     <ul class="signal-list">
+        <!-- Truco para pasar la fecha de la última señal a JavaScript -->
+        {% if senales %}
+            <span id="latest-signal-id" data-time="{{ senales.0.fecha_creacion|date:'U' }}" style="display: none;"></span>
+        {% endif %}
+
         {% for senal in senales %}
         <li class="signal-item {% if senal.tipo == 'Compra' or senal.tipo == 'BUY' %}text-buy{% else %}text-sell{% endif %}">
+            
             <div class="signal-asset-col">
                 <div class="asset-icon-placeholder">{{ senal.activo|slice:":2" }}</div>
                 <div class="asset-details">
                     <span class="asset-name">{{ senal.activo }}</span>
-                    <span class="order-type-tag">{{ senal.tipo }}</span>
+                    <div>
+                        <span class="order-type-tag">{{ senal.tipo }}</span>
+                        <!-- ACÁ AGREGAMOS EL LOTAJE -->
+                        {% if senal.lotaje %}
+                            <span class="lot-tag">Lot: {{ senal.lotaje }}</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -97,7 +123,18 @@
             </div>
 
             <div class="signal-meta-col">
-                <i class="far fa-clock"></i> {{ senal.fecha_creacion|date:"d/m/Y H:i:s" }}
+                <!-- ACÁ AGREGAMOS EL RESULTADO (GANANCIA, PÉRDIDA, BE) -->
+                {% if senal.resultado %}
+                    <div class="result-badge 
+                        {% if senal.resultado|lower == 'ganancia' or senal.resultado|lower == 'ganada' or senal.resultado|lower == 'tp' %}result-win
+                        {% elif senal.resultado|lower == 'perdida' or senal.resultado|lower == 'sl' %}result-loss
+                        {% elif senal.resultado|lower == 'be' or senal.resultado|lower == 'break even' %}result-be
+                        {% endif %}">
+                        {{ senal.resultado }}
+                    </div>
+                {% endif %}
+                
+                <span class="time-text"><i class="far fa-clock"></i> {{ senal.fecha_creacion|date:"d/m/Y H:i:s" }}</span>
             </div>
         </li>
         {% empty %}
@@ -107,6 +144,49 @@
         {% endfor %}
     </ul>
 </div>
+
+<!-- SCRIPT PARA EL SONIDO DE ALERTA -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const signalElement = document.getElementById("latest-signal-id");
+        
+        if (signalElement) {
+            const currentLatestTime = signalElement.getAttribute("data-time");
+            const storedLatestTime = localStorage.getItem("ultimaSenalVIP_Time");
+
+            // Si hay una señal nueva guardada que es distinta a la anterior
+            if (storedLatestTime && storedLatestTime !== currentLatestTime) {
+                reproducirBeep();
+            }
+
+            // Actualizamos el registro en el navegador
+            localStorage.setItem("ultimaSenalVIP_Time", currentLatestTime);
+        }
+    });
+
+    // Función que genera el sonido "Biip"
+    function reproducirBeep() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine'; // Tono suave
+            oscillator.frequency.setValueAtTime(850, audioCtx.currentTime); // Frecuencia del beep
+            
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volumen
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.5);
+        } catch (e) {
+            console.log("El navegador bloqueó el audio automático. El usuario debe hacer clic en la pantalla primero.");
+        }
+    }
+</script>
 
 </body>
 </html>
