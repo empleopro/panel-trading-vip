@@ -24,9 +24,9 @@ class PerfilSuscripcion(models.Model):
         if self.estado == 'ACTIVO' and self.fecha_fin_acceso and self.fecha_fin_acceso > ahora:
             return True
             
-        # Si está en su prueba (CAMBIADO A 2 MINUTOS PARA TESTEO)
+        # Si está en su prueba de 15 días
         if self.estado == 'PRUEBA':
-            fin_prueba = self.fecha_registro + timedelta(minutes=2)
+            fin_prueba = self.fecha_registro + timedelta(days=15)
             if ahora <= fin_prueba:
                 return True
             else:
@@ -56,6 +56,7 @@ class SenalTrading(models.Model):
     
     activo = models.CharField(max_length=20, help_text="Ej: XAUUSD, US30")
     tipo = models.CharField(max_length=10, choices=TIPOS)
+    lotaje = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Ej: 0.01")
     precio_entrada = models.DecimalField(max_digits=10, decimal_places=5)
     sl = models.DecimalField(max_digits=10, decimal_places=5, verbose_name="Stop Loss")
     tp = models.DecimalField(max_digits=10, decimal_places=5, verbose_name="Take Profit")
