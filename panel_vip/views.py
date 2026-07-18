@@ -19,6 +19,13 @@ def inicio_panel(request):
     perfil, created = PerfilSuscripcion.objects.get_or_create(usuario=request.user)
     if not perfil.verificar_acceso():
         return redirect('pagina_pago')
+        
+    # --- SISTEMA PARA BORRAR SEÑALES ---
+    if request.method == 'POST' and 'borrar_id' in request.POST:
+        senal_id = request.POST.get('borrar_id')
+        SenalTrading.objects.filter(id=senal_id).delete()
+        return redirect('inicio_panel')
+
     senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
     return render(request, 'panel.html', {'senales': senales})
 

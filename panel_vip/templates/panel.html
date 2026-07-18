@@ -4,25 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMC Quant Terminal - VIP</title>
-    <!-- Bootstrap Modo Oscuro -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome para iconos -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-terminal: #0a0e14;
-            --bg-card: #0d1117;
-            --border-color: #30363d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --buy-color: #3fb950;
-            --sell-color: #f85149;
-            --be-color: #d29922;
-            --font-sans: 'IBM Plex Sans', sans-serif;
-            --font-mono: 'IBM Plex Mono', monospace;
+            --bg-terminal: #0a0e14; --bg-card: #0d1117; --border-color: #30363d;
+            --text-primary: #c9d1d9; --text-secondary: #8b949e;
+            --buy-color: #3fb950; --sell-color: #f85149; --be-color: #d29922;
+            --font-sans: 'IBM Plex Sans', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
         }
 
         body { background-color: var(--bg-terminal); color: var(--text-primary); font-family: var(--font-sans); margin: 0; }
@@ -32,11 +23,11 @@
         #audio-alert:hover { background: rgba(210, 153, 34, 0.25); }
 
         .header-terminal { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
+        .header-title { font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
         .header-status { font-size: 0.85rem; color: #58a6ff; background: rgba(88, 166, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 5px; border: 1px solid rgba(88, 166, 255, 0.2); }
         
         .signal-list { list-style: none; padding: 0; margin: 0; }
-        .signal-item { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 0.8rem; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s ease; position: relative; }
+        .signal-item { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 0.8rem; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; transition: 0.2s ease; position: relative; }
         
         .signal-asset-col { display: flex; align-items: center; flex: 0 0 20%; min-width: 180px; }
         .asset-icon-placeholder { width: 40px; height: 40px; background-color: var(--bg-terminal); border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 700; }
@@ -45,61 +36,39 @@
         .order-type-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; display: inline-block; }
         .text-buy .order-type-tag { color: var(--buy-color); background: rgba(63, 185, 80, 0.1); border: 1px solid rgba(63, 185, 80, 0.2); }
         .text-sell .order-type-tag { color: var(--sell-color); background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.2); }
-        
-        .lot-tag { font-size: 0.75rem; color: var(--text-secondary); background: var(--bg-terminal); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-family: var(--font-mono); display: inline-block; }
+        .lot-tag { font-size: 0.75rem; color: var(--text-secondary); background: var(--bg-terminal); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-family: var(--font-mono); }
 
         .signal-pricing-col { flex: 1; display: flex; justify-content: space-around; padding: 0 2rem; }
         .price-label-group { display: flex; flex-direction: column; align-items: center; }
         .price-label-text { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1px; }
         .price-value { font-family: var(--font-mono); font-size: 1.1rem; }
         
-        .signal-meta-col { flex: 0 0 15%; display: flex; flex-direction: column; align-items: flex-end; text-align: right; justify-content: center; }
+        .signal-meta-col { flex: 0 0 15%; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
         
         .result-badge { font-size: 0.85rem; font-weight: 700; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .result-win { background-color: rgba(63, 185, 80, 0.15); color: var(--buy-color); border: 1px solid var(--buy-color); }
         .result-loss { background-color: rgba(248, 81, 73, 0.15); color: var(--sell-color); border: 1px solid var(--sell-color); }
         .result-be { background-color: rgba(210, 153, 34, 0.15); color: var(--be-color); border: 1px solid var(--be-color); }
-        
         .time-text { color: var(--text-secondary); font-size: 0.8rem; }
+        
+        .btn-delete { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--text-secondary); opacity: 0.5; transition: 0.2s; cursor: pointer; }
+        .btn-delete:hover { opacity: 1; color: var(--sell-color); }
 
         /* ========================================= */
-        /* MAGIA PARA ADAPTAR A CELULARES (RESPONSIVE) */
+        /* MAGIA PARA CELULARES (DISEÑO EN LISTA)    */
         /* ========================================= */
         @media (max-width: 768px) {
             .terminal-layout { padding: 1rem; }
-            
             .header-terminal { flex-direction: column; gap: 15px; text-align: center; }
+            .signal-item { flex-direction: column; align-items: stretch; gap: 10px; padding-top: 2rem; }
+            .signal-asset-col { border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
             
-            .signal-item { 
-                flex-direction: column; 
-                align-items: stretch; 
-                gap: 15px; 
-            }
+            /* Acá arreglamos que no se encimen los precios */
+            .signal-pricing-col { flex-direction: column; padding: 0; gap: 10px; }
+            .price-label-group { flex-direction: row; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 5px; width: 100%; }
+            .price-label-text { margin-bottom: 0; }
             
-            .signal-asset-col { 
-                border-bottom: 1px solid var(--border-color); 
-                padding-bottom: 12px; 
-            }
-            
-            .signal-pricing-col { 
-                padding: 0; 
-                justify-content: space-between; 
-            }
-            
-            .price-label-group { 
-                align-items: flex-start; 
-            }
-            
-            .price-value { font-size: 1rem; }
-            
-            .signal-meta-col { 
-                flex-direction: row; 
-                justify-content: space-between; 
-                align-items: center; 
-                border-top: 1px solid var(--border-color); 
-                padding-top: 12px; 
-            }
-            
+            .signal-meta-col { flex-direction: row; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; }
             .result-badge { margin-bottom: 0; }
         }
     </style>
@@ -114,7 +83,7 @@
 
     <div class="header-terminal">
         <h1 class="header-title">
-            <i class="fas fa-chart-line text-muted me-2"></i>SMC Quant Terminal - VIP
+            <i class="fas fa-chart-line text-muted me-2"></i>SMC Quant Terminal
         </h1>
         <div class="header-status">
             <i class="fas fa-satellite-dish me-1"></i> Transmisión en vivo
@@ -129,6 +98,15 @@
         {% for senal in senales %}
         <li class="signal-item {% if senal.tipo == 'Compra' or senal.tipo == 'BUY' %}text-buy{% else %}text-sell{% endif %}">
             
+            <!-- BOTÓN DE BORRAR SEÑAL -->
+            <form method="POST" class="m-0 p-0">
+                {% csrf_token %}
+                <input type="hidden" name="borrar_id" value="{{ senal.id }}">
+                <button type="submit" class="btn-delete" title="Borrar señal" onclick="return confirm('¿Seguro que querés borrar esta señal?')">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </form>
+
             <div class="signal-asset-col">
                 <div class="asset-icon-placeholder">{{ senal.activo|slice:":2" }}</div>
                 <div class="asset-details">
@@ -145,20 +123,24 @@
             <div class="signal-pricing-col">
                 <div class="price-label-group">
                     <span class="price-label-text">Entrada</span>
-                    <span class="price-value">{{ senal.precio_entrada }}</span>
+                    <span class="price-value entry-val">{{ senal.precio_entrada }}</span>
                 </div>
                 
                 <div class="price-label-group">
                     <span class="price-label-text">Stop Loss</span>
                     <div class="d-flex align-items-center">
-                        <span class="price-value">{{ senal.sl }}</span>
+                        <span class="price-value sl-val">{{ senal.sl }}</span>
+                        <!-- Insignia de PIPS oculta por defecto, JS la activa -->
+                        <span class="badge bg-transparent border border-secondary text-secondary ms-2 sl-badge" style="font-size: 0.65rem; display: none;"></span>
                     </div>
                 </div>
 
                 <div class="price-label-group">
                     <span class="price-label-text">Take Profit</span>
                     <div class="d-flex align-items-center">
-                        <span class="price-value">{{ senal.tp }}</span>
+                        <span class="price-value tp-val">{{ senal.tp }}</span>
+                        <!-- Insignia de PIPS oculta por defecto, JS la activa -->
+                        <span class="badge bg-transparent border border-secondary text-secondary ms-2 tp-badge" style="font-size: 0.65rem; display: none;"></span>
                     </div>
                 </div>
             </div>
@@ -166,16 +148,15 @@
             <div class="signal-meta-col">
                 {% if senal.resultado %}
                     <div class="result-badge 
-                        {% if senal.resultado|lower == 'ganancia' or senal.resultado|lower == 'ganada' or senal.resultado|lower == 'tp' %}result-win
-                        {% elif senal.resultado|lower == 'perdida' or senal.resultado|lower == 'sl' %}result-loss
-                        {% elif senal.resultado|lower == 'be' or senal.resultado|lower == 'break even' %}result-be
+                        {% if senal.resultado|lower == 'ganancia' %}result-win
+                        {% elif senal.resultado|lower == 'perdida' %}result-loss
+                        {% elif senal.resultado|lower == 'be' %}result-be
                         {% else %}text-muted border border-secondary
                         {% endif %}">
                         {{ senal.resultado }}
                     </div>
                 {% endif %}
-                
-                <span class="time-text"><i class="far fa-clock"></i> {{ senal.fecha_creacion|date:"d/m/Y H:i:s" }}</span>
+                <span class="time-text"><i class="far fa-clock"></i> {{ senal.fecha_creacion|date:"d/m/Y H:i" }}</span>
             </div>
         </li>
         {% empty %}
@@ -190,12 +171,8 @@
     let audioCtx = null;
 
     function iniciarAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         document.getElementById('audio-alert').style.display = 'none';
     }
 
@@ -204,27 +181,62 @@
         try {
             tocarTono(880, 0.15); 
             setTimeout(() => tocarTono(1100, 0.25), 150); 
-        } catch (e) {
-            console.error("Error de audio:", e);
-        }
+        } catch (e) { console.error("Error de audio:", e); }
     }
 
     function tocarTono(frecuencia, duracion) {
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-
         oscillator.type = 'square'; 
         oscillator.frequency.setValueAtTime(frecuencia, audioCtx.currentTime); 
-        
         gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duracion);
-
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + duracion);
     }
+
+    // --- CALCULADORA DE PIPS ---
+    function calcularPipsUI() {
+        document.querySelectorAll('.signal-item').forEach(item => {
+            const assetNameEl = item.querySelector('.asset-name');
+            if (!assetNameEl) return;
+            
+            const symbol = assetNameEl.innerText.trim().toUpperCase();
+            // Reemplazamos coma por punto por si Python manda decimales con coma
+            const entry = parseFloat(item.querySelector('.entry-val').innerText.replace(',', '.'));
+            const sl = parseFloat(item.querySelector('.sl-val').innerText.replace(',', '.'));
+            const tp = parseFloat(item.querySelector('.tp-val').innerText.replace(',', '.'));
+            
+            const calcularDistancia = (precioDestino) => {
+                if (!precioDestino || isNaN(precioDestino) || precioDestino === 0) return 0;
+                const diff = Math.abs(entry - precioDestino);
+                
+                // Filtros matemáticos exactos 
+                if (symbol.includes('XAU')) return (diff * 10).toFixed(1); // Oro
+                if (symbol.includes('EUR') || (symbol.includes('USD') && !symbol.includes('BTC'))) {
+                    return (diff * 10000).toFixed(1); // Forex
+                }
+                // BTC, US30 y Nasdaq
+                return diff.toFixed(1); 
+            };
+
+            if (sl > 0) {
+                const slPips = calcularDistancia(sl);
+                const slBadge = item.querySelector('.sl-badge');
+                if(slBadge) { slBadge.innerText = slPips + " PIPS"; slBadge.style.display = "inline-block"; }
+            }
+            if (tp > 0) {
+                const tpPips = calcularDistancia(tp);
+                const tpBadge = item.querySelector('.tp-badge');
+                if(tpBadge) { tpBadge.innerText = tpPips + " PIPS"; tpBadge.style.display = "inline-block"; }
+            }
+        });
+    }
+
+    // Ejecutamos la calculadora al abrir la página
+    document.addEventListener("DOMContentLoaded", calcularPipsUI);
 
     setInterval(() => {
         fetch(window.location.href)
@@ -246,6 +258,8 @@
                 }
 
                 document.querySelector('.signal-list').innerHTML = nuevaListaHtml;
+                // Volvemos a calcular los Pips en las señales nuevas que entraron
+                calcularPipsUI(); 
             })
             .catch(err => console.error('Error:', err));
     }, 5000); 
