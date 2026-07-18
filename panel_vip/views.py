@@ -109,13 +109,16 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Payload perfecto: Todo en formato estricto, RUC válido genérico, sin nulos y categoría base 1.
+    # PAYLOAD BLINDADO: 
+    # - Categoria 909 confirmada
+    # - Agregado precio_unitario por si lo requiere
+    # - Forzamos (int) en los montos para evitar cualquier bug de JSON
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
-        "monto_total": monto,
+        "monto_total": int(monto),
         "tipo_pedido": "VENTA-COMERCIO",
-        "id_pedido_comercio": pedido_id,
+        "id_pedido_comercio": str(pedido_id),
         "descripcion_resumen": "Suscripcion Panel VIP",
         "comprador": {
             "ruc": "80000000-5",
@@ -135,12 +138,13 @@ def generar_pago_pagopar(request):
                 "ciudad": "1",
                 "nombre_articulo": "Acceso Panel VIP",
                 "cantidad": 1,
-                "categoria": "1", 
+                "categoria": "909",
                 "public_key": public_key,
                 "url_imagen": "https://www.pagopar.com/images/favicon.png",
                 "descripcion": "Acceso al panel VIP mensual",
                 "id_producto": 1,
-                "precio_total_articulo": monto,
+                "precio_unitario": int(monto),
+                "precio_total_articulo": int(monto),
                 "vendedor_telefono": "0981000000",
                 "vendedor_direccion": "Mcal Estigarribia 123",
                 "vendedor_direccion_referencia": "Centro",
