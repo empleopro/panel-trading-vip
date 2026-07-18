@@ -65,7 +65,6 @@ def recibir_senal(request):
             print("--- SEÑAL RECIBIDA DESDE MT5 ---")
             
             if request.content_type == 'application/json':
-                # ACÁ ESTÁ LA MAGIA: Limpiamos los caracteres invisibles de MQL5
                 cuerpo_limpio = request.body.decode('utf-8').strip('\x00').strip()
                 data = json.loads(cuerpo_limpio)
             else:
@@ -73,12 +72,13 @@ def recibir_senal(request):
                 
             print("Datos extraídos:", data)
 
-            simbolo = data.get('simbolo', 'XAUUSD')
-            tipo = data.get('tipo', 'BUY')
-            precio = data.get('precio', 0)
+            # ACÁ ESTÁ LA CORRECCIÓN: Usamos las palabras exactas que manda MT5
+            simbolo = data.get('symbol', 'XAUUSD') 
+            tipo = data.get('type', 'BUY')
+            precio = data.get('price', 0)
             sl = data.get('sl', 0)
             tp = data.get('tp', 0)
-            lotaje = data.get('lotaje', 0.01)
+            lotaje = data.get('volume', 0.01)
 
             SenalTrading.objects.create(
                 activo=simbolo, 
