@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ELIMINAMOS EL META REFRESH PARA QUE EL NAVEGADOR NO CORTE EL AUDIO -->
     <title>SMC Quant Terminal - VIP</title>
     <!-- Bootstrap Modo Oscuro -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,7 +20,7 @@
             --text-secondary: #8b949e;
             --buy-color: #3fb950;
             --sell-color: #f85149;
-            --be-color: #d29922; /* Color mostaza para Break Even */
+            --be-color: #d29922;
             --font-sans: 'IBM Plex Sans', sans-serif;
             --font-mono: 'IBM Plex Mono', monospace;
         }
@@ -29,15 +28,16 @@
         body { background-color: var(--bg-terminal); color: var(--text-primary); font-family: var(--font-sans); margin: 0; }
         .terminal-layout { padding: 1.5rem; max-width: 95%; margin: 0 auto; }
         
-        /* Banner para activar audio */
         #audio-alert { background: rgba(210, 153, 34, 0.15); border: 1px solid var(--be-color); color: var(--be-color); cursor: pointer; transition: 0.3s; }
         #audio-alert:hover { background: rgba(210, 153, 34, 0.25); }
 
         .header-terminal { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; }
         .header-status { font-size: 0.85rem; color: #58a6ff; background: rgba(88, 166, 255, 0.1); padding: 0.4rem 0.8rem; border-radius: 5px; border: 1px solid rgba(88, 166, 255, 0.2); }
+        
         .signal-list { list-style: none; padding: 0; margin: 0; }
         .signal-item { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 0.8rem; padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s ease; position: relative; }
+        
         .signal-asset-col { display: flex; align-items: center; flex: 0 0 20%; min-width: 180px; }
         .asset-icon-placeholder { width: 40px; height: 40px; background-color: var(--bg-terminal); border-radius: 50%; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 700; }
         .asset-name { font-size: 1.25rem; font-weight: 700; text-transform: uppercase; line-height: 1; display: block; margin-bottom: 4px; }
@@ -61,15 +61,55 @@
         .result-be { background-color: rgba(210, 153, 34, 0.15); color: var(--be-color); border: 1px solid var(--be-color); }
         
         .time-text { color: var(--text-secondary); font-size: 0.8rem; }
+
+        /* ========================================= */
+        /* MAGIA PARA ADAPTAR A CELULARES (RESPONSIVE) */
+        /* ========================================= */
+        @media (max-width: 768px) {
+            .terminal-layout { padding: 1rem; }
+            
+            .header-terminal { flex-direction: column; gap: 15px; text-align: center; }
+            
+            .signal-item { 
+                flex-direction: column; 
+                align-items: stretch; 
+                gap: 15px; 
+            }
+            
+            .signal-asset-col { 
+                border-bottom: 1px solid var(--border-color); 
+                padding-bottom: 12px; 
+            }
+            
+            .signal-pricing-col { 
+                padding: 0; 
+                justify-content: space-between; 
+            }
+            
+            .price-label-group { 
+                align-items: flex-start; 
+            }
+            
+            .price-value { font-size: 1rem; }
+            
+            .signal-meta-col { 
+                flex-direction: row; 
+                justify-content: space-between; 
+                align-items: center; 
+                border-top: 1px solid var(--border-color); 
+                padding-top: 12px; 
+            }
+            
+            .result-badge { margin-bottom: 0; }
+        }
     </style>
 </head>
 <body>
 
 <div class="terminal-layout">
 
-    <!-- CARTEL PARA DESBLOQUEAR EL SONIDO EN EL CELULAR -->
     <div id="audio-alert" class="alert text-center fw-bold py-2 mb-3" onclick="iniciarAudio()">
-        <i class="fas fa-volume-up me-2"></i> Toca aquí una vez para habilitar el sonido de las señales
+        <i class="fas fa-volume-up me-2"></i> Toca aquí para habilitar el sonido de las señales
     </div>
 
     <div class="header-terminal">
@@ -112,9 +152,6 @@
                     <span class="price-label-text">Stop Loss</span>
                     <div class="d-flex align-items-center">
                         <span class="price-value">{{ senal.sl }}</span>
-                        {% if senal.riesgo_pips %}
-                        <span class="badge bg-transparent border border-secondary text-secondary ms-2" style="font-size: 0.65rem;">{{ senal.riesgo_pips }} PIPS</span>
-                        {% endif %}
                     </div>
                 </div>
 
@@ -122,9 +159,6 @@
                     <span class="price-label-text">Take Profit</span>
                     <div class="d-flex align-items-center">
                         <span class="price-value">{{ senal.tp }}</span>
-                        {% if senal.beneficio_pips %}
-                        <span class="badge bg-transparent border border-secondary text-secondary ms-2" style="font-size: 0.65rem;">{{ senal.beneficio_pips }} PIPS</span>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -135,6 +169,7 @@
                         {% if senal.resultado|lower == 'ganancia' or senal.resultado|lower == 'ganada' or senal.resultado|lower == 'tp' %}result-win
                         {% elif senal.resultado|lower == 'perdida' or senal.resultado|lower == 'sl' %}result-loss
                         {% elif senal.resultado|lower == 'be' or senal.resultado|lower == 'break even' %}result-be
+                        {% else %}text-muted border border-secondary
                         {% endif %}">
                         {{ senal.resultado }}
                     </div>
@@ -151,11 +186,9 @@
     </ul>
 </div>
 
-<!-- MOTOR DE ACTUALIZACIÓN INVISIBLE Y SONIDO -->
 <script>
     let audioCtx = null;
 
-    // 1. Función para destrabar el audio (el usuario debe hacer clic una vez)
     function iniciarAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -163,36 +196,36 @@
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
-        // Ocultamos el cartel porque el audio ya está activo
         document.getElementById('audio-alert').style.display = 'none';
-        console.log("Audio desbloqueado por el usuario.");
     }
 
-    // 2. Función que genera el sonido "Biip"
     function reproducirBeep() {
-        if (!audioCtx) return; // Si no activó el audio, no intentamos reproducir para evitar errores
-        
+        if (!audioCtx) return; 
         try {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(850, audioCtx.currentTime); 
-            
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.5);
+            tocarTono(880, 0.15); 
+            setTimeout(() => tocarTono(1100, 0.25), 150); 
         } catch (e) {
-            console.error("Error al reproducir el sonido:", e);
+            console.error("Error de audio:", e);
         }
     }
 
-    // 3. Actualizador silencioso (busca señales nuevas sin recargar la página)
+    function tocarTono(frecuencia, duracion) {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square'; 
+        oscillator.frequency.setValueAtTime(frecuencia, audioCtx.currentTime); 
+        
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duracion);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + duracion);
+    }
+
     setInterval(() => {
         fetch(window.location.href)
             .then(response => response.text())
@@ -200,28 +233,22 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                // Extraemos la lista de señales nueva que llegó del servidor
                 const nuevaListaHtml = doc.querySelector('.signal-list').innerHTML;
-                
-                // Buscamos si hay un ID de tiempo nuevo
                 const nuevoRegistro = doc.getElementById('latest-signal-id');
                 const registroActual = document.getElementById('latest-signal-id');
                 
-                // Si hay una señal nueva que antes no estaba, hacemos sonar la alarma
                 if (nuevoRegistro && registroActual) {
                     if (nuevoRegistro.getAttribute('data-time') !== registroActual.getAttribute('data-time')) {
                         reproducirBeep();
                     }
                 } else if (nuevoRegistro && !registroActual) {
-                    // Si es la primerísima señal del día
                     reproducirBeep();
                 }
 
-                // Reemplazamos las señales viejas por las nuevas suavemente
                 document.querySelector('.signal-list').innerHTML = nuevaListaHtml;
             })
-            .catch(err => console.error('Error buscando señales:', err));
-    }, 5000); // Se ejecuta cada 5 segundos
+            .catch(err => console.error('Error:', err));
+    }, 5000); 
 </script>
 
 </body>
