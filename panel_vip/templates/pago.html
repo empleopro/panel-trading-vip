@@ -23,10 +23,11 @@
             align-items: center; 
             min-height: 100vh; 
             margin: 0;
+            padding: 20px;
         }
         .payment-container { 
             background-color: var(--bg-card); 
-            padding: 3rem 2rem; 
+            padding: 2.5rem 2rem; 
             border-radius: 12px; 
             border: 1px solid var(--border-color); 
             width: 100%; 
@@ -44,43 +45,14 @@
             font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
-        h1 { font-size: 2rem; font-weight: 600; color: #58a6ff; margin-bottom: 0.5rem; }
-        .subtitle { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        h1 { font-size: 1.8rem; font-weight: 600; color: #58a6ff; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
         .price { font-size: 2rem; font-weight: 700; color: #3fb950; margin-bottom: 1.5rem; }
-        .price small { font-size: 1rem; color: var(--text-secondary); font-weight: normal; }
-        .btn-pagopar { 
-            background-color: #238636; 
-            color: white; 
-            width: 100%; 
-            padding: 1rem; 
-            font-weight: 700; 
-            font-size: 1.1rem;
-            border: none; 
-            border-radius: 6px; 
-            margin-bottom: 1rem; 
-            transition: background-color 0.2s;
-        }
-        .btn-pagopar:hover { background-color: #2ea043; }
-        .info-text { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem; }
-        .divider { 
-            display: flex; 
-            align-items: center; 
-            text-align: center; 
-            color: var(--text-secondary); 
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .divider:not(:empty)::before { margin-right: .25em; }
-        .divider:not(:empty)::after { margin-left: .25em; }
+        
         .bank-details { 
-            border: 1px dashed #58a6ff; 
+            border: 1px solid #58a6ff; 
             background: rgba(88, 166, 255, 0.05);
             padding: 1.5rem; 
             border-radius: 8px; 
@@ -88,8 +60,58 @@
             font-size: 0.95rem; 
             color: #c9d1d9; 
             line-height: 1.8;
+            margin-bottom: 1.5rem;
         }
-        .bank-details strong { color: #58a6ff; }
+        
+        .alias-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+        
+        .alias-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #58a6ff;
+            letter-spacing: 2px;
+        }
+
+        .btn-copy {
+            background-color: #58a6ff;
+            color: #0a0e14;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .btn-copy:hover {
+            background-color: #79c0ff;
+        }
+
+        .btn-whatsapp { 
+            background-color: #25D366; 
+            color: white; 
+            display: block;
+            width: 100%; 
+            padding: 1rem; 
+            font-weight: 700; 
+            font-size: 1.1rem;
+            border: none; 
+            border-radius: 6px; 
+            text-decoration: none;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+        .btn-whatsapp:hover { background-color: #1ebe57; color: white; }
     </style>
 </head>
 <body>
@@ -97,27 +119,65 @@
 <div class="payment-container">
     <div class="badge-acceso"><i class="fas fa-lock"></i> ACCESO RESTRINGIDO</div>
     
-    <h1>Renová tu Suscripción</h1>
-    <p class="subtitle">Elegí tu método de pago para activar tu acceso al instante y seguir recibiendo las señales VIP.</p>
+    <h1>Suscripción VIP</h1>
+    <p class="subtitle">Realizá tu pago vía SIPAP para activar tu acceso inmediato al panel.</p>
     
-    <div class="price">Gs. 120.000 <small>/ mes</small></div>
+    <div class="price">Gs. 120.000</div>
 
-    <form action="{% url 'checkout_pagopar' %}" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn-pagopar"><i class="fas fa-bolt"></i> PAGO AUTOMÁTICO</button>
-    </form>
-    
-    <p class="info-text">Activación inmediata las 24hs (QR / Tarjeta).</p>
-
-    <div class="divider">O pago manual (SIPAP)</div>
-    
     <div class="bank-details">
-        <div><strong>Banco:</strong> Ueno Bank</div>
-        <div><strong>Titular:</strong> Hugo Cesar Gimenez Collante</div>
-        <div><strong>C.I. / Alias:</strong> 4470307</div>
-        <div><strong>Nro de Cuenta:</strong> 6192075262</div>
+        <div style="text-align: center; margin-bottom: 5px; color: #3fb950; font-size: 1rem; font-weight: bold;">
+            TRANSFERENCIA DIRECTA
+        </div>
+        
+        <div class="alias-container">
+            <div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">ALIAS / C.I.</div>
+                <div class="alias-number" id="aliasCIMarco">4470307</div>
+            </div>
+            <button class="btn-copy" onclick="copiarAlias()">COPIAR</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <div><strong style="color: #58a6ff;">Banco:</strong> Ueno Bank</div>
+            <div><strong style="color: #58a6ff;">Titular:</strong> Hugo Cesar Gimenez Collante</div>
+        </div>
     </div>
+    
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+        Una vez transferido, enviá tu comprobante para habilitarte el usuario.
+    </p>
+
+    <!-- NO TE OLVIDES DE CAMBIAR ESTE NÚMERO POR EL TUYO -->
+    <a href="https://wa.me/595991224697?text=Hola,%20ya%20realicé%20el%20pago%20de%20120.000%20Gs%20para%20el%20Panel%20VIP.%20Te%20paso%20el%20comprobante." target="_blank" class="btn-whatsapp">
+        <i class="fab fa-whatsapp"></i> ENVIAR COMPROBANTE
+    </a>
 </div>
+
+<script>
+    function copiarAlias() {
+        // Selecciona el texto del alias
+        var aliasText = document.getElementById("aliasCIMarco").innerText;
+        
+        // Lo copia al portapapeles
+        navigator.clipboard.writeText(aliasText).then(function() {
+            // Cambia el texto del botón temporalmente
+            var btn = document.querySelector('.btn-copy');
+            var originalText = btn.innerText;
+            btn.innerText = '¡COPIADO!';
+            btn.style.backgroundColor = '#3fb950';
+            btn.style.color = 'white';
+            
+            // Vuelve a la normalidad después de 2 segundos
+            setTimeout(function() {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = '#58a6ff';
+                btn.style.color = '#0a0e14';
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Error al copiar: ', err);
+        });
+    }
+</script>
 
 </body>
 </html>
