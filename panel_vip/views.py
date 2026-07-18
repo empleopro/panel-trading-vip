@@ -109,42 +109,46 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Hemos convertido los IDs conflictivos a cadenas de texto ("1", "909")
+    # Payload minimizado: Sin RUC, sin ciudades físicas para evadir a la SET y validaciones de delivery
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
         "monto_total": monto,
         "tipo_pedido": "VENTA-COMERCIO",
         "id_pedido_comercio": pedido_id,
-        "descripcion_resumen": "Suscripcion Panel VIP",
+        "descripcion_resumen": "Acceso Panel VIP",
         "comprador": {
-            "ruc": "4444444-4",
+            "ruc": "",  # <-- VACÍO PARA SALTAR LA SET
             "email": "cliente@vip.com",
             "nombre": request.user.username if request.user.username else "Cliente VIP",
             "telefono": "0981000000",
-            "direccion": "Itaugua Centro",
+            "direccion": "",
             "documento": "4444444",
-            "coordenadas": "-25.3884,-57.3364",
-            "razon_social": "Cliente VIP",
+            "coordenadas": "",
+            "razon_social": request.user.username if request.user.username else "Cliente VIP",
             "tipo_documento": "CI",
-            "direccion_referencia": "Centro",
-            "ciudad": "1"  # <--- COMO STRING
+            "direccion_referencia": "",
+            "ciudad": None  # <-- NULL EN JSON PARA INDICAR QUE NO HAY ENVÍO
         },
         "compras_items": [
             {
-                "ciudad": "1",  # <--- COMO STRING
-                "nombre_articulo": "Acceso VIP 30 Dias",
+                "ciudad": "1", 
+                "nombre_articulo": "Suscripcion VIP",
                 "cantidad": 1,
-                "categoria": "909",  # <--- COMO STRING
+                "categoria": "909", 
                 "public_key": public_key,
-                "url_imagen": "https://ui-avatars.com/api/?name=VIP&background=0D8ABC&color=fff",
-                "descripcion": "Acceso al panel de senales VIP",
-                "id_producto": "1",  # <--- COMO STRING
+                "url_imagen": "",
+                "descripcion": "Acceso al panel de señales",
+                "id_producto": 1, 
                 "precio_total_articulo": monto,
-                "vendedor_telefono": "0981000000",
-                "vendedor_direccion": "Itaugua",
-                "vendedor_direccion_referencia": "Centro",
-                "vendedor_direccion_coordenadas": "-25.3884,-57.3364"
+                "vendedor_telefono": "",
+                "vendedor_direccion": "",
+                "vendedor_direccion_referencia": "",
+                "vendedor_direccion_coordenadas": "",
+                "peso": 0,
+                "largo": 0,
+                "ancho": 0,
+                "alto": 0
             }
         ]
     }
