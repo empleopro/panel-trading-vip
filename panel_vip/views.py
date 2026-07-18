@@ -109,46 +109,42 @@ def generar_pago_pagopar(request):
     cadena = f"{private_key}{pedido_id}{monto}"
     token_seguridad = hashlib.sha1(cadena.encode('utf-8')).hexdigest()
     
-    # Payload minimizado: Sin RUC, sin ciudades físicas para evadir a la SET y validaciones de delivery
+    # Payload perfecto: Todo en formato estricto, RUC válido genérico, sin nulos y categoría base 1.
     datos_pedido = {
         "token": token_seguridad,
         "public_key": public_key,
         "monto_total": monto,
         "tipo_pedido": "VENTA-COMERCIO",
         "id_pedido_comercio": pedido_id,
-        "descripcion_resumen": "Acceso Panel VIP",
+        "descripcion_resumen": "Suscripcion Panel VIP",
         "comprador": {
-            "ruc": "",  # <-- VACÍO PARA SALTAR LA SET
+            "ruc": "80000000-5",
             "email": "cliente@vip.com",
             "nombre": request.user.username if request.user.username else "Cliente VIP",
             "telefono": "0981000000",
-            "direccion": "",
-            "documento": "4444444",
-            "coordenadas": "",
+            "direccion": "Mcal Estigarribia 123",
+            "documento": "8000000",
+            "coordenadas": "-25.282197,-57.635099",
             "razon_social": request.user.username if request.user.username else "Cliente VIP",
             "tipo_documento": "CI",
-            "direccion_referencia": "",
-            "ciudad": None  # <-- NULL EN JSON PARA INDICAR QUE NO HAY ENVÍO
+            "direccion_referencia": "Centro",
+            "ciudad": "1"
         },
         "compras_items": [
             {
-                "ciudad": "1", 
-                "nombre_articulo": "Suscripcion VIP",
+                "ciudad": "1",
+                "nombre_articulo": "Acceso Panel VIP",
                 "cantidad": 1,
-                "categoria": "909", 
+                "categoria": "1", 
                 "public_key": public_key,
-                "url_imagen": "",
-                "descripcion": "Acceso al panel de señales",
-                "id_producto": 1, 
+                "url_imagen": "https://www.pagopar.com/images/favicon.png",
+                "descripcion": "Acceso al panel VIP mensual",
+                "id_producto": 1,
                 "precio_total_articulo": monto,
-                "vendedor_telefono": "",
-                "vendedor_direccion": "",
-                "vendedor_direccion_referencia": "",
-                "vendedor_direccion_coordenadas": "",
-                "peso": 0,
-                "largo": 0,
-                "ancho": 0,
-                "alto": 0
+                "vendedor_telefono": "0981000000",
+                "vendedor_direccion": "Mcal Estigarribia 123",
+                "vendedor_direccion_referencia": "Centro",
+                "vendedor_direccion_coordenadas": "-25.282197,-57.635099"
             }
         ]
     }
