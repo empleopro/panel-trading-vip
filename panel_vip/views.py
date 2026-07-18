@@ -57,39 +57,50 @@ def vista_registro(request):
             error = 'Usuario ya existe.'
     return render(request, 'registro.html', {'error': error})
 
-# 5. WEBHOOK SEÑALES
+# 5. WEBHOOK SEÑALES (VERSIÓN AVANZADA - OPEN, MODIFY, CLOSE)
 @csrf_exempt
 def recibir_senal(request):
     if request.method == 'POST':
         try:
-            print("--- SEÑAL RECIBIDA DESDE MT5 ---")
-            
             if request.content_type == 'application/json':
                 cuerpo_limpio = request.body.decode('utf-8').strip('\x00').strip()
                 data = json.loads(cuerpo_limpio)
             else:
                 data = request.POST
                 
-            print("Datos extraídos:", data)
+            action = data.get('action', 'OPEN')
+            simbolo = data.get('symbol', 'XAUUSD')
 
-            # ACÁ ESTÁ LA CORRECCIÓN: Usamos las palabras exactas que manda MT5
-            simbolo = data.get('symbol', 'XAUUSD') 
-            tipo = data.get('type', 'BUY')
-            precio = data.get('price', 0)
-            sl = data.get('sl', 0)
-            tp = data.get('tp', 0)
-            lotaje = data.get('volume', 0.01)
+            if action == 'OPEN':
+                # Creamos la operación nueva cuando entra
+                SenalTrading.objects.create(
+                    activo=simbolo, 
+                    tipo=data.get('type', 'BUY'), 
+                    precio_entrada=data.get('price', 0), 
+                    sl=data.get('sl', 0), 
+                    tp=data.get('tp', 0),
+                    lotaje=data.get('volume', 0.01),
+                    resultado='EN_CURSO'
+                )
+                print(f"--- OPERACIÓN ABIERTA: {simbolo} ---")
 
-            SenalTrading.objects.create(
-                activo=simbolo, 
-                tipo=tipo, 
-                precio_entrada=precio, 
-                sl=sl, 
-                tp=tp,
-                lotaje=lotaje
-            )
-            
-            print("--- SEÑAL GUARDADA EXITOSAMENTE EN LA BASE DE DATOS ---")
+            elif action == 'MODIFY':
+                # Buscamos la última operación abierta de este símbolo y le actualizamos el SL/TP
+                ultima_senal = SenalTrading.objects.filter(activo=simbolo, resultado='EN_CURSO').order_by('-fecha_creacion').first()
+                if ultima_senal:
+                    ultima_senal.sl = data.get('sl', ultima_senal.sl)
+                    ultima_senal.tp = data.get('tp', ultima_senal.tp)
+                    ultima_senal.save()
+                    print(f"--- SL/TP MODIFICADO EN: {simbolo} ---")
+
+            elif action == 'CLOSE':
+                # Buscamos la operación abierta y le ponemos Ganancia, Pérdida o BE
+                ultima_senal = SenalTrading.objects.filter(activo=simbolo, resultado='EN_CURSO').order_by('-fecha_creacion').first()
+                if ultima_senal:
+                    ultima_senal.resultado = data.get('resultado', 'CERRADA')
+                    ultima_senal.save()
+                    print(f"--- OPERACIÓN CERRADA: {simbolo} - RESULTADO: {ultima_senal.resultado} ---")
+
             return JsonResponse({'status': 'ok'})
             
         except Exception as e:
