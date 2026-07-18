@@ -62,20 +62,40 @@ def vista_registro(request):
 def recibir_senal(request):
     if request.method == 'POST':
         try:
+            print("--- SEÑAL RECIBIDA DESDE MT5 ---")
+            
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
             else:
                 data = request.POST
+                
+            print("Datos extraídos:", data)
 
+            # Obtenemos todos los datos (incluyendo el lotaje que faltaba)
             simbolo = data.get('simbolo', 'XAUUSD')
             tipo = data.get('tipo', 'BUY')
             precio = data.get('precio', 0)
             sl = data.get('sl', 0)
             tp = data.get('tp', 0)
-            SenalTrading.objects.create(activo=simbolo, tipo=tipo, precio_entrada=precio, sl=sl, tp=tp)
+            lotaje = data.get('lotaje', 0.01) # <-- ESTO FALTABA
+
+            # Guardamos en la base de datos CON el lotaje incluido
+            SenalTrading.objects.create(
+                activo=simbolo, 
+                tipo=tipo, 
+                precio_entrada=precio, 
+                sl=sl, 
+                tp=tp,
+                lotaje=lotaje # <-- ESTO FALTABA
+            )
+            
+            print("--- SEÑAL GUARDADA EXITOSAMENTE EN LA BASE DE DATOS ---")
             return JsonResponse({'status': 'ok'})
+            
         except Exception as e:
+            print(f"--- ERROR FATAL AL GUARDAR LA SEÑAL: {str(e)} ---")
             return JsonResponse({'status': 'error', 'msg': str(e)}, status=500)
+            
     return JsonResponse({'status': 'error'}, status=400)
 
 # 6. WEBHOOK PAGOPAR
