@@ -98,7 +98,8 @@
         {% for senal in senales %}
         <li class="signal-item {% if senal.tipo == 'Compra' or senal.tipo == 'BUY' %}text-buy{% else %}text-sell{% endif %}">
             
-            <!-- BOTÓN DE BORRAR SEÑAL -->
+            <!-- BOTÓN DE BORRAR SEÑAL (CANDADO: SOLO ADMIN) -->
+            {% if request.user.is_superuser %}
             <form method="POST" class="m-0 p-0">
                 {% csrf_token %}
                 <input type="hidden" name="borrar_id" value="{{ senal.id }}">
@@ -106,6 +107,7 @@
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </form>
+            {% endif %}
 
             <div class="signal-asset-col">
                 <div class="asset-icon-placeholder">{{ senal.activo|slice:":2" }}</div>

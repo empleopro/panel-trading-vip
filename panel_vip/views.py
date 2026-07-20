@@ -20,10 +20,11 @@ def inicio_panel(request):
     if not perfil.verificar_acceso():
         return redirect('pagina_pago')
         
-    # --- SISTEMA PARA BORRAR SEÑALES ---
+    # --- SISTEMA PARA BORRAR SEÑALES (PROTEGIDO: SOLO ADMIN) ---
     if request.method == 'POST' and 'borrar_id' in request.POST:
-        senal_id = request.POST.get('borrar_id')
-        SenalTrading.objects.filter(id=senal_id).delete()
+        if request.user.is_superuser:  # <--- CANDADO DE SEGURIDAD
+            senal_id = request.POST.get('borrar_id')
+            SenalTrading.objects.filter(id=senal_id).delete()
         return redirect('inicio_panel')
 
     senales = SenalTrading.objects.all().order_by('-fecha_creacion')[:10]
@@ -79,7 +80,6 @@ def recibir_senal(request):
             simbolo = data.get('symbol', 'XAUUSD')
 
             if action == 'OPEN':
-                # Creamos la operación nueva cuando entra
                 SenalTrading.objects.create(
                     activo=simbolo, 
                     tipo=data.get('type', 'BUY'), 
@@ -92,7 +92,6 @@ def recibir_senal(request):
                 print(f"--- OPERACIÓN ABIERTA: {simbolo} ---")
 
             elif action == 'MODIFY':
-                # Buscamos la última operación abierta de este símbolo y le actualizamos el SL/TP
                 ultima_senal = SenalTrading.objects.filter(activo=simbolo, resultado='EN_CURSO').order_by('-fecha_creacion').first()
                 if ultima_senal:
                     ultima_senal.sl = data.get('sl', ultima_senal.sl)
@@ -101,7 +100,6 @@ def recibir_senal(request):
                     print(f"--- SL/TP MODIFICADO EN: {simbolo} ---")
 
             elif action == 'CLOSE':
-                # Buscamos la operación abierta y le ponemos Ganancia, Pérdida o BE
                 ultima_senal = SenalTrading.objects.filter(activo=simbolo, resultado='EN_CURSO').order_by('-fecha_creacion').first()
                 if ultima_senal:
                     ultima_senal.resultado = data.get('resultado', 'CERRADA')
